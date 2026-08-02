@@ -11,6 +11,7 @@
   "scripts": {
     "build": "npm --workspace @tavojs/core run build && npm --workspace tavo run build",
     "benchmark": "npm --workspace @tavojs/core run benchmark",
+    "benchmark:report": "npm --workspace @tavojs/core run benchmark -- --report-only",
     "benchmark:json": "npm --workspace @tavojs/core run benchmark:json",
     "benchmark:check": "npm --workspace @tavojs/core run benchmark:check",
     "clean": "npm --workspace @tavojs/core run clean && npm --workspace tavo run clean",

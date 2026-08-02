@@ -42,7 +42,9 @@ jobs:
         run: npm run test:compat
 
       - name: Benchmarks
-        run: npm run benchmark
+        # GitHub-hosted runners have variable CPU allocation. Keep measurements
+        # visible here, but enforce absolute ceilings on controlled hardware.
+        run: npm run benchmark:report
 
       - name: Pack Dry Run
         working-directory: packages/core

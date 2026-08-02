@@ -15,6 +15,7 @@ const jsonIndex = process.argv.indexOf("--json");
 const jsonOutputPath = jsonIndex >= 0 ? process.argv[jsonIndex + 1] : null;
 const baselineIndex = process.argv.indexOf("--baseline");
 const baselinePath = baselineIndex >= 0 ? process.argv[baselineIndex + 1] : null;
+const reportOnly = process.argv.includes("--report-only");
 const maxRegressionPercent = 35;
 const baselinePayload = baselinePath
   ? JSON.parse(await fs.readFile(path.resolve(baselinePath), "utf8"))
@@ -395,9 +396,14 @@ for (const result of benchmarks) {
 }
 
 if (failures.length > 0) {
-  console.error("\nBenchmark thresholds exceeded:");
+  const log = reportOnly ? console.warn : console.error;
+  log(reportOnly
+    ? "\nBenchmark threshold warnings (report-only run):"
+    : "\nBenchmark thresholds exceeded:");
   for (const failure of failures) {
-    console.error(`- ${failure}`);
+    log(`- ${failure}`);
   }
-  process.exitCode = 1;
+  if (!reportOnly) {
+    process.exitCode = 1;
+  }
 }
