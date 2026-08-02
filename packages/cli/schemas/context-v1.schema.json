@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/context-v1.schema.json",
+  "title": "Tavo Agent Context v1 Data",
+  "type": "object",
+  "required": ["framework", "protocolVersion", "protocolStability", "task", "target", "detail", "project", "conventions", "focus", "api", "recipes", "commands"],
+  "properties": {
+    "framework": { "const": "tavo" },
+    "protocolVersion": { "const": 1 },
+    "protocolStability": { "const": "stable" },
+    "task": { "type": ["string", "null"] },
+    "target": { "type": ["string", "null"] },
+    "detail": { "enum": ["summary", "full"] },
+    "project": { "type": "object" },
+    "conventions": { "type": "object" },
+    "focus": { "type": ["object", "null"] },
+    "api": { "type": "array" },
+    "recipes": { "type": "array" },
+    "commands": { "type": "object" },
+    "routes": { "type": "array" },
+    "inventory": { "type": "object" },
+    "scripts": { "type": "object" }
+  },
+  "additionalProperties": false
+}

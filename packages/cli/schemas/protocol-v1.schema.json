@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/protocol-v1.schema.json",
+  "title": "Tavo Machine Protocol v1 Envelope",
+  "type": "object",
+  "required": ["schemaVersion", "command", "ok", "project", "data", "diagnostics", "nextActions", "metrics"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "command": { "type": "string", "minLength": 1 },
+    "ok": { "type": "boolean" },
+    "project": {
+      "type": "object",
+      "required": ["fingerprint"],
+      "properties": { "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{16}$" } },
+      "additionalProperties": false
+    },
+    "data": {},
+    "diagnostics": { "type": "array", "items": { "$ref": "diagnostic-v1.schema.json" } },
+    "nextActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "reason"],
+        "properties": { "command": { "type": "string" }, "reason": { "type": "string" } },
+        "additionalProperties": false
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["durationMs", "bytes", "estimatedTokens"],
+      "properties": {
+        "durationMs": { "type": "number", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "estimatedTokens": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

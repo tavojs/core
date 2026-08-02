@@ -1,0 +1,58 @@
+{
+  "name": "tavo",
+  "version": "1.0.0",
+  "description": "CLI for creating, building, inspecting, and previewing Tavo apps.",
+  "type": "module",
+  "author": "Tavo contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tavojs/core.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://tavojs.dev/docs/cli",
+  "bugs": {
+    "url": "https://github.com/tavojs/core/issues"
+  },
+  "bin": {
+    "tavo": "./dist/tavo.mjs"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "assets",
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "generator-spec.schema.json",
+    "schemas",
+    "evals"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.json && node -e \"fs.chmodSync('dist/tavo.mjs', 0o755)\"",
+    "clean": "rm -rf dist",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "eval:offline": "npm run build && node evals/offline.mjs",
+    "eval:live": "npm run build && node evals/live-runner.mjs",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "dependencies": {
+    "@tavojs/core": "^1.0.0"
+  },
+  "keywords": [
+    "tavo",
+    "cli",
+    "tsx",
+    "ssr",
+    "file-based-routing",
+    "vite"
+  ],
+  "license": "MIT"
+}

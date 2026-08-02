@@ -1,0 +1,119 @@
+{
+  "name": "@tavojs/core",
+  "version": "1.0.0",
+  "description": "A lightweight TSX framework with file-based routing, SSR, MVC components, and realtime stores.",
+  "type": "module",
+  "author": "Tavo contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tavojs/core.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://tavojs.dev/docs/core",
+  "bugs": {
+    "url": "https://github.com/tavojs/core/issues"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "import": "./dist/index.js"
+    },
+    "./router": {
+      "types": "./dist/router/index.d.ts",
+      "import": "./dist/router/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "browser": "./dist/config/browser.js",
+      "import": "./dist/config/index.js"
+    },
+    "./plugin": {
+      "types": "./dist/plugins/index.d.ts",
+      "import": "./dist/plugins/index.js"
+    },
+    "./dev": {
+      "types": "./dist/dev.d.ts",
+      "browser": "./dist/dev.browser.js",
+      "import": "./dist/dev.js"
+    },
+    "./server-only": {
+      "types": "./dist/server-only.d.ts",
+      "import": "./dist/server-only.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "import": "./dist/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/jsx-dev-runtime.d.ts",
+      "import": "./dist/jsx-dev-runtime.js"
+    }
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.publish.json && node -e \"fs.cpSync('src/global.d.ts','dist/global.d.ts'); fs.cpSync('src/global.d.ts','dist/style-imports.d.ts')\"",
+    "benchmark": "npm run build && node benchmarks/run.mjs",
+    "benchmark:json": "npm run build && node benchmarks/run.mjs --json benchmarks/results/latest.json && node benchmarks/validate-json.mjs benchmarks/results/latest.json",
+    "benchmark:check": "npm run build && node benchmarks/run.mjs --baseline benchmarks/results/latest.json",
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.tsx",
+    "test:integration": "node --test --import tsx tests/integration/*.test.ts",
+    "prepublishOnly": "npm run clean && npm run build && npm run test:integration",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "tavo",
+    "framework",
+    "tsx",
+    "typescript",
+    "jsx",
+    "ssr",
+    "routing",
+    "file-based-routing",
+    "mvc",
+    "reactive-store"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.9.3",
+    "jsdom": "^26.1.0",
+    "sharp": "^0.35.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "sharp": "^0.35.3"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@types/semver": "^7.7.1",
+    "dotenv": "^17.4.2",
+    "semver": "^7.8.5"
+  }
+}

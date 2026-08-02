@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/generator-spec.schema.json",
+  "title": "Tavo Generator Spec",
+  "description": "Schema for tavo generate --from-json and --from-stdin.",
+  "oneOf": [
+    { "$ref": "#/$defs/spec" },
+    {
+      "type": "array",
+      "items": { "$ref": "#/$defs/spec" }
+    }
+  ],
+  "$defs": {
+    "safeName": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "(^/|\\.\\.)" }
+    },
+    "shape": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Comma-separated JavaScript identifier keys."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"
+          }
+        }
+      ]
+    },
+    "spec": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": { "const": "page" },
+            "name": { "$ref": "#/$defs/safeName" },
+            "loader": { "type": "boolean" },
+            "seo": { "type": "boolean" },
+            "force": { "type": "boolean" }
+          }
+        },
+        {
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": { "const": "component" },
+            "name": { "$ref": "#/$defs/safeName" },
+            "props": { "type": "boolean" },
+            "force": { "type": "boolean" }
+          }
+        },
+        {
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": { "const": "store" },
+            "name": { "$ref": "#/$defs/safeName" },
+            "shape": { "$ref": "#/$defs/shape" },
+            "force": { "type": "boolean" }
+          }
+        },
+        {
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "layout" },
+            "name": { "$ref": "#/$defs/safeName" },
+            "force": { "type": "boolean" }
+          }
+        },
+        {
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "404" },
+            "force": { "type": "boolean" }
+          }
+        },
+        {
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "error" },
+            "force": { "type": "boolean" }
+          }
+        },
+        {
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": { "const": "action" },
+            "name": { "$ref": "#/$defs/safeName" },
+            "force": { "type": "boolean" }
+          }
+        }
+      ]
+    }
+  }
+}

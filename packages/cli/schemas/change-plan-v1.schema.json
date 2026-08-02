@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/change-plan-v1.schema.json",
+  "title": "Tavo Transactional Change Plan v1",
+  "type": "object",
+  "required": ["schemaVersion", "operations"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["id", "kind", "spec"],
+            "properties": { "id": { "type": "string" }, "kind": { "const": "generate" }, "spec": {} },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["id", "kind", "file", "content"],
+            "properties": { "id": { "type": "string" }, "kind": { "const": "create-file" }, "file": { "type": "string" }, "content": { "type": "string", "maxLength": 1048576 } },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["id", "kind", "file", "expectedSha256", "range", "text"],
+            "properties": {
+              "id": { "type": "string" }, "kind": { "const": "replace-range" }, "file": { "type": "string" },
+              "expectedSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "range": {
+                "type": "object", "required": ["start", "end"],
+                "properties": {
+                  "start": { "$ref": "#/$defs/position" },
+                  "end": { "$ref": "#/$defs/position" }
+                }, "additionalProperties": false
+              },
+              "text": { "type": "string", "maxLength": 1048576 }
+            }, "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["id", "kind", "file", "expectedSha256"],
+            "properties": { "id": { "type": "string" }, "kind": { "const": "delete-file" }, "file": { "type": "string" }, "expectedSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["id", "kind", "diagnosticCode", "file"],
+            "properties": { "id": { "type": "string" }, "kind": { "const": "apply-fix" }, "diagnosticCode": { "type": "string" }, "file": { "type": "string" }, "expectedSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "expectedMissing": { "const": true } },
+            "oneOf": [{ "required": ["expectedSha256"] }, { "required": ["expectedMissing"] }],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object", "required": ["line", "column"],
+      "properties": { "line": { "type": "integer", "minimum": 1 }, "column": { "type": "integer", "minimum": 1 } },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

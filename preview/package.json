@@ -1,0 +1,29 @@
+{
+  "name": "tavo-preview",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:ssr": "node server.mjs",
+    "build": "npm --prefix .. run build && vite build",
+    "build:ssr": "node ../packages/cli/dist/tavo.mjs build",
+    "start:ssr": "node .tavo/build/server/start.mjs",
+    "preview": "npm run build && vite preview"
+  },
+  "dependencies": {
+    "@tavojs/core": "file:../packages/core"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "prettier": "^3.8.3",
+    "sass": "^1.99.0",
+    "vite": "^7.3.6"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "immutable": "5.1.8",
+    "postcss": "8.5.18",
+    "sharp": "0.35.3"
+  }
+}

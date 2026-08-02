@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  core:
+    name: Core Build, Tests, Pack (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 20.19.0
+          - 22.12.0
+          - 24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build Core
+        run: npm run build
+
+      - name: Documentation
+        run: npm run docs:check
+
+      - name: Integration Tests
+        run: npm run test:integration
+
+      - name: Package Compatibility
+        run: npm run test:compat
+
+      - name: Benchmarks
+        run: npm run benchmark
+
+      - name: Pack Dry Run
+        working-directory: packages/core
+        run: npm pack --dry-run
+
+  preview:
+    name: Preview Build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 20.19.0
+          - 22.12.0
+          - 24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            preview/package-lock.json
+
+      - name: Install Core
+        run: npm ci
+
+      - name: Install Preview
+        run: npm --prefix preview ci
+
+      - name: Build Preview
+        run: npm --prefix preview run build
+
+  e2e:
+    name: SSR Browser E2E (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 20.19.0
+          - 22.12.0
+          - 24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            preview/package-lock.json
+
+      - name: Install Core
+        run: npm ci
+
+      - name: Install Preview
+        run: npm --prefix preview ci
+
+      - name: Install Playwright Browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E Tests
+        run: npm run test:e2e
+
+  cli:
+    name: CLI Package Smoke (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 20.19.0
+          - 22.12.0
+          - 24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install Workspace
+        run: npm ci
+
+      - name: Build CLI
+        run: npm --workspace tavo run build
+
+      - name: Source Structure
+        run: npm run check:structure
+
+      - name: CLI Help Output
+        run: node packages/cli/dist/tavo.mjs --help
+
+      - name: CLI Tests
+        run: npm run test:cli
+
+      - name: Agent Protocol Offline Gate
+        run: npm run test:agent
+
+      - name: CLI Pack Dry Run
+        working-directory: packages/cli
+        run: npm pack --dry-run

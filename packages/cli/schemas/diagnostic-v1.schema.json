@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/diagnostic-v1.schema.json",
+  "title": "Tavo Machine Diagnostic v1",
+  "type": "object",
+  "required": ["code", "level", "message"],
+  "properties": {
+    "code": { "type": "string", "minLength": 1 },
+    "level": { "enum": ["error", "warning"] },
+    "category": { "type": "string" },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "safeToAutoFix": { "type": "boolean" },
+    "message": { "type": "string" },
+    "file": { "type": "string" },
+    "line": { "type": "integer", "minimum": 1 },
+    "sourceRange": {
+      "type": "object",
+      "required": ["startLine", "startColumn", "endLine", "endColumn"],
+      "properties": {
+        "startLine": { "type": "integer", "minimum": 1 },
+        "startColumn": { "type": "integer", "minimum": 1 },
+        "endLine": { "type": "integer", "minimum": 1 },
+        "endColumn": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "suggestedFix": { "type": "string" },
+    "docs": { "type": "string" },
+    "commands": { "type": "array", "items": { "type": "string" } },
+    "fix": { "type": "object" },
+    "path": { "type": "string" }
+  },
+  "additionalProperties": true
+}

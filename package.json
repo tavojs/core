@@ -1,0 +1,66 @@
+{
+  "name": "@tavojs/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workspace for the Tavo framework core package, CLI, previews, docs, and tests.",
+  "type": "module",
+  "workspaces": [
+    "packages/core",
+    "packages/cli"
+  ],
+  "scripts": {
+    "build": "npm --workspace @tavojs/core run build && npm --workspace tavo run build",
+    "benchmark": "npm --workspace @tavojs/core run benchmark",
+    "benchmark:json": "npm --workspace @tavojs/core run benchmark:json",
+    "benchmark:check": "npm --workspace @tavojs/core run benchmark:check",
+    "clean": "npm --workspace @tavojs/core run clean && npm --workspace tavo run clean",
+    "dev": "npm --workspace @tavojs/core run dev",
+    "docs:api": "npm run build && node scripts/generate-api-reference.mjs",
+    "docs:agent": "npm --workspace @tavojs/core run build && node scripts/generate-agent-api-cards.mjs && npm --workspace tavo run build && node scripts/generate-agent-protocol-docs.mjs",
+    "docs:check": "npm run build && node scripts/check-docs.mjs",
+    "audit:structure": "node scripts/check-source-structure.mjs --all",
+    "check:structure": "node scripts/check-source-structure.mjs",
+    "test:cli": "npm --workspace tavo run test",
+    "test:agent": "npm --workspace tavo run eval:offline",
+    "test:e2e": "npm run build && npm --prefix preview run build:ssr && playwright test",
+    "test:compat": "npm run build && node --test tests/compat/*.test.mjs",
+    "test:integration": "npm --workspace @tavojs/core run test:integration",
+    "pack:check": "npm pack --dry-run --workspace @tavojs/core && npm pack --dry-run --workspace tavo",
+    "audit:release": "npm audit --audit-level=high && npm --prefix preview audit --audit-level=high",
+    "release:check": "npm run docs:check && npm run check:structure && npm run test:integration && npm run test:cli && npm run test:compat && npm run test:agent && npm run pack:check && npm run audit:release",
+    "export:public": "node scripts/export-public.mjs",
+    "sync:public": "node scripts/export-public.mjs --sync",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "framework",
+    "tsx",
+    "typescript",
+    "jsx",
+    "ssr",
+    "routing",
+    "reactive-store"
+  ],
+  "license": "MIT",
+  "packageManager": "npm@11.5.1",
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.2",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.8.3",
+    "sass": "^1.99.0",
+    "sharp": "^0.35.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "immutable": "5.1.8",
+    "postcss": "8.5.18"
+  }
+}

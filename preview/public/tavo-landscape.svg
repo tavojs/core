@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f2747" />
+      <stop offset="100%" stop-color="#ffb067" />
+    </linearGradient>
+    <linearGradient id="ridge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2d7c68" />
+      <stop offset="100%" stop-color="#183f3d" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)" />
+  <circle cx="1210" cy="170" r="92" fill="#fff4d9" />
+  <path d="M0 580 L280 320 L520 560 L730 270 L980 580 L1220 350 L1600 650 L1600 900 L0 900 Z" fill="url(#ridge)" />
+  <path d="M0 690 L220 610 L450 760 L770 590 L1110 760 L1390 610 L1600 700 L1600 900 L0 900 Z" fill="#102f36" opacity="0.62" />
+  <text x="120" y="792" fill="#ffffff" font-size="102" font-family="Georgia, serif">tavo image seo</text>
+</svg>

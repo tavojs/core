@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/change-receipt-v1.schema.json",
+  "title": "Tavo Change Receipt v1",
+  "type": "object",
+  "required": ["schemaVersion", "dryRun", "transaction", "fileHashes", "operations", "verificationCommand"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "dryRun": { "type": "boolean" },
+    "transaction": { "enum": ["planned", "committed", "rolled-back", "rejected"] },
+    "fileHashes": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          { "type": "null" }
+        ]
+      }
+    },
+    "operations": { "type": "array" },
+    "verificationCommand": { "type": "string" }
+  },
+  "additionalProperties": false
+}

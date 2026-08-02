@@ -1,0 +1,240 @@
+body {
+  margin: 0;
+  padding: 24px;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+  color: #0f172a;
+}
+
+.tavo-app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.tavo-title {
+  margin: 0;
+  color: #1f2937;
+}
+
+.tavo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tavo-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.tavo-nav-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 110px;
+  padding: 8px 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.tavo-nav-link:hover {
+  text-decoration: none;
+  background: #eff6ff;
+}
+
+.tavo-nav-link--active {
+  color: #0f172a;
+  border-color: #93c5fd;
+  background: #dbeafe;
+}
+
+.tavo-nav-link code {
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+  word-break: break-word;
+}
+
+.tavo-layout-data {
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.tavo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #111827;
+}
+
+.tavo-badge small {
+  color: #475569;
+}
+
+.tavo-badge--mint {
+  border-color: #5eead4;
+  background: #ccfbf1;
+}
+
+.tavo-badge--sunset {
+  border-color: #fdba74;
+  background: #ffedd5;
+}
+
+.tavo-theme-mint {
+  box-shadow: 0 12px 28px rgba(20, 184, 166, 0.16);
+}
+
+.tavo-theme-sunset {
+  box-shadow: 0 12px 28px rgba(251, 146, 60, 0.2);
+}
+
+.tavo-muted {
+  color: #4b5563;
+}
+
+.tavo-panel {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.tavo-panel code {
+  background: #e2e8f0;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.tavo-panel h3,
+.tavo-panel h4 {
+  margin: 0 0 8px;
+}
+
+.tavo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tavo-controls button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.tavo-controls button:hover {
+  background: #f1f5f9;
+}
+
+.tavo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.tavo-actions button {
+  border: 1px solid #c4b5fd;
+  background: #ffffff;
+  color: #4c1d95;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.tavo-actions button:hover {
+  background: #ede9fe;
+}
+
+.tavo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.tavo-card {
+  padding: 12px;
+  border: 1px solid #ddd6fe;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.tavo-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tavo-list li + li {
+  margin-top: 6px;
+}
+
+.tavo-store-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.tavo-error {
+  margin: 0;
+  padding: 10px;
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+}
+
+.tavo-debug-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tavo-code {
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (max-width: 800px) {
+  .tavo-grid,
+  .tavo-debug-grid {
+    grid-template-columns: 1fr;
+  }
+}

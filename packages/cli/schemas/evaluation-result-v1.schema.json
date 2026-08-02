@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavojs.dev/schemas/evaluation-result-v1.schema.json",
+  "title": "Tavo Agent Evaluation Result v1",
+  "type": "object",
+  "required": ["schemaVersion", "model", "taskId", "inputTokens", "outputTokens", "toolCalls", "firstPass", "repaired", "durationMs"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "model": { "type": "string" }, "taskId": { "type": "string" },
+    "inputTokens": { "type": "integer", "minimum": 0 }, "outputTokens": { "type": "integer", "minimum": 0 },
+    "toolCalls": { "type": "integer", "minimum": 0 }, "retries": { "type": "integer", "minimum": 0 },
+    "invalidEdits": { "type": "integer", "minimum": 0 }, "firstPass": { "type": "boolean" },
+    "repaired": { "type": "boolean" }, "durationMs": { "type": "number", "minimum": 0 }
+  },
+  "additionalProperties": false
+}

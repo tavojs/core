@@ -1,0 +1,17 @@
+node_modules
+dist
+packages/core/dist
+.DS_Store
+*.tgz
+test-results
+preview/dist
+preview/.tavo
+benchmarks/results
+packages/core/benchmarks/results
+.idea
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+npm-debug.log*

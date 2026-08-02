@@ -1,0 +1,28 @@
+.card {
+  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 62%);
+}
+
+.modulePill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #38bdf8;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 9px;
+}
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 800px) {
+  .resourceGrid {
+    grid-template-columns: 1fr;
+  }
+}

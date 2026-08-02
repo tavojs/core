@@ -1,0 +1,42 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Tavo.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: For security vulnerabilities, use private vulnerability reporting instead of this form.
+  - type: input
+    id: version
+    attributes:
+      label: Tavo version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime
+      description: Include Node.js, npm, browser, and operating-system versions when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Link a repository or provide the smallest code sample that demonstrates the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
