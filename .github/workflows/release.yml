@@ -48,3 +48,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+          # release:check has already built, tested, and packed both workspaces.
+          # Changesets publishes workspaces concurrently, so rerunning lifecycle
+          # scripts here can race while @tavojs/core replaces its dist directory.
+          NPM_CONFIG_IGNORE_SCRIPTS: "true"

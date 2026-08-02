@@ -11,6 +11,7 @@ const coreDir = path.join(rootDir, "packages/core");
 const cliDir = path.join(rootDir, "packages/cli");
 const rootPackageJsonPath = path.join(rootDir, "package.json");
 const packageJsonPath = path.join(coreDir, "package.json");
+const releaseWorkflowPath = path.join(rootDir, ".github/workflows/release.yml");
 const canonicalRepositoryUrl = "git+https://github.com/tavojs/core.git";
 const canonicalHomepages = {
   "@tavojs/core": "https://tavojs.dev/docs/core",
@@ -384,11 +385,19 @@ test("compat: public packages expose npm-ready metadata", async () => {
   assert.equal(cliPackageJson.publishConfig?.access, "public");
   assert.equal(corePackageJson.publishConfig?.registry, "https://registry.npmjs.org/");
   assert.equal(cliPackageJson.publishConfig?.registry, "https://registry.npmjs.org/");
+  assert.deepEqual(cliPackageJson.bin, { tavo: "dist/tavo.mjs" });
   assert.equal(corePackageJson.version, cliPackageJson.version);
   assert.equal(
     cliPackageJson.dependencies?.["@tavojs/core"],
     `^${corePackageJson.version}`
   );
+});
+
+test("compat: publish reuses artifacts verified before concurrent workspace publication", async () => {
+  const workflow = await fs.readFile(releaseWorkflowPath, "utf8");
+
+  assert.match(workflow, /- name: Verify release\n\s+run: npm run release:check/);
+  assert.match(workflow, /NPM_CONFIG_IGNORE_SCRIPTS: ["']true["']/);
 });
 
 test("compat: launch metadata advances both packages to 1.0 and scaffolds 1.x dependencies", async () => {

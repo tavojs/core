@@ -110,6 +110,15 @@ The publish workflow runs the complete release verification before calling Chang
 publish a package when that gate fails. Its repository guard makes the job a no-op anywhere except
 `tavojs/core`, so the private repository cannot publish these packages.
 
+Changesets may publish changed workspaces concurrently. The workflow therefore reuses the artifacts
+already built, tested, and inspected by `release:check` and disables redundant npm lifecycle scripts
+during the publish command. This prevents one package from replacing its `dist` directory while a
+dependent package is being verified.
+
+If a run publishes only some packages, do not unpublish them or change their versions. Fix the
+workflow on `main` and run **Publish** again. Changesets skips versions that already exist on npm and
+publishes only the missing packages before creating the remaining tags and GitHub releases.
+
 ## Enable Tokenless Trusted Publishing
 
 After the first publication, configure the Trusted Publisher for both npm packages:
