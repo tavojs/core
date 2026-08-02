@@ -102,8 +102,11 @@ with a short-lived granular npm token:
 2. Create a one-day granular npm token with **All Packages**, **Read and write**, and
    **Bypass two-factor authentication**. New package names cannot yet be selected individually.
 3. Store it as the `NPM_TOKEN` secret on the protected `npm` GitHub environment.
-4. In GitHub Actions, manually run the **Publish** workflow from `main`.
-5. Confirm both `@tavojs/core@1.0.0` and `@tavojs/cli@1.0.0` exist on npm and their GitHub releases and tags
+4. For the bootstrap publication only, temporarily pass it to the publish step as
+   `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}`. The registry configuration created by
+   `actions/setup-node` reads `NODE_AUTH_TOKEN`.
+5. In GitHub Actions, manually run the **Publish** workflow from `main`.
+6. Confirm both `@tavojs/core@1.0.0` and `@tavojs/cli@1.0.0` exist on npm and their GitHub releases and tags
    were created.
 
 The publish workflow runs the complete release verification before calling Changesets. Never
@@ -121,7 +124,8 @@ publishes only the missing packages before creating the remaining tags and GitHu
 
 ## Enable Tokenless Trusted Publishing
 
-After the first publication, configure the Trusted Publisher for both npm packages:
+After the first publication and before the bootstrap token expires, configure the Trusted Publisher
+for both npm packages:
 
 - Provider: GitHub Actions
 - Organization or user: `tavojs`
@@ -130,8 +134,17 @@ After the first publication, configure the Trusted Publisher for both npm packag
 - Environment: `npm`
 - Allowed action: `npm publish`
 
-Then delete the `NPM_TOKEN` environment secret and revoke the bootstrap token. Future publications
-use GitHub OIDC and receive npm provenance automatically.
+The release workflow must keep `id-token: write`, use a GitHub-hosted runner, configure the npm
+registry through `actions/setup-node`, and run npm `11.5.1` or newer. It must not pass
+`NPM_TOKEN` or `NODE_AUTH_TOKEN` to the publish step after migration. npm then exchanges the GitHub
+OIDC identity for a short-lived publish credential and generates provenance automatically.
+
+Verify one real tokenless publication before removing the bootstrap credential. After it succeeds:
+
+1. On each package, open **Settings → Publishing access**, select **Require two-factor
+   authentication and disallow tokens**, and save.
+2. Delete the `NPM_TOKEN` secret from the protected `npm` GitHub environment.
+3. Revoke the bootstrap token in npm account settings instead of waiting for it to expire.
 
 ## Subsequent Releases
 
