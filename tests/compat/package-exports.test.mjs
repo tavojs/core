@@ -396,10 +396,13 @@ test("compat: public packages expose npm-ready metadata", async () => {
   );
 });
 
-test("compat: publish reuses artifacts verified before concurrent workspace publication", async () => {
+test("compat: publish uses OIDC and reuses artifacts verified before concurrent workspace publication", async () => {
   const workflow = await fs.readFile(releaseWorkflowPath, "utf8");
 
   assert.match(workflow, /- name: Verify release\n\s+run: npm run release:check/);
+  assert.match(workflow, /id-token: write/);
+  assert.match(workflow, /registry-url: https:\/\/registry\.npmjs\.org/);
+  assert.doesNotMatch(workflow, /\b(?:NPM_TOKEN|NODE_AUTH_TOKEN)\b/);
   assert.match(workflow, /NPM_CONFIG_IGNORE_SCRIPTS: ["']true["']/);
 });
 
