@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Security fixes are provided for the latest `1.x` release of `@tavojs/core` and `tavo`.
+Security fixes are provided for the latest `1.x` release of `@tavojs/core` and `@tavojs/cli`.
 
 ## Reporting a Vulnerability
 

@@ -6,13 +6,13 @@ The runtime package for Tavo applications. It provides the TSX runtime, DOM rend
 
 ```bash
 npm install @tavojs/core
-npm install --save-dev tavo vite typescript
+npm install --save-dev @tavojs/cli vite typescript
 ```
 
 For a complete generated project, use:
 
 ```bash
-npx tavo@latest create app my-app
+npx @tavojs/cli@latest create app my-app
 ```
 
 ## Basic Usage

@@ -118,11 +118,11 @@ export function createAgentManifestSource(packageManager: string): string {
     apiCards: AGENT_API_CARDS,
     recipes: AGENT_GENERATOR_RECIPES,
     schemas: {
-      protocol: "tavo/schemas/protocol-v1.schema.json",
-      context: "tavo/schemas/context-v1.schema.json",
-      changePlan: "tavo/schemas/change-plan-v1.schema.json",
-      changeReceipt: "tavo/schemas/change-receipt-v1.schema.json",
-      diagnostic: "tavo/schemas/diagnostic-v1.schema.json"
+      protocol: "@tavojs/cli/schemas/protocol-v1.schema.json",
+      context: "@tavojs/cli/schemas/context-v1.schema.json",
+      changePlan: "@tavojs/cli/schemas/change-plan-v1.schema.json",
+      changeReceipt: "@tavojs/cli/schemas/change-receipt-v1.schema.json",
+      diagnostic: "@tavojs/cli/schemas/diagnostic-v1.schema.json"
     },
     generatorSpecs: [
       { kind: "page", name: "dashboard", seo: true },

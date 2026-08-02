@@ -45,7 +45,7 @@ export async function runTask(task) {
 }
 ```
 
-Run an adapter with `npm --workspace tavo run eval:live -- ./adapter.mjs report.json`.
+Run an adapter with `npm --workspace @tavojs/cli run eval:live -- ./adapter.mjs report.json`.
 Use at least two model/tool ecosystems nightly and before a release. Credentials and provider SDKs
 belong to the adapter, not Tavo.
 

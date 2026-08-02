@@ -57,7 +57,7 @@ const lines = [
   "",
   "Change plans use schema version 1 and apply atomically. Existing-file replacements, fixes, and deletions require the exact SHA-256 returned by `tavo inspect`; fixes that create a missing file use `expectedMissing: true`. A stale precondition rejects the entire plan before writes. Generated and build directories cannot be change targets.",
   "",
-  "Schemas ship under `tavo/schemas`: protocol, context, diagnostics, change plans, change receipts, and evaluation results.",
+  "Schemas ship under `@tavojs/cli/schemas`: protocol, context, diagnostics, change plans, change receipts, and evaluation results.",
   "",
   "## Rules",
   "",

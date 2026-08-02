@@ -87,7 +87,11 @@ function shouldReportTypeDiagnostic(diagnostic, virtualFiles) {
   // the built Tavo package, assignability, strict callback types, and nullability still fail.
   if (diagnostic.code === 2304 || diagnostic.code === 18004) return false;
   const moduleName = unresolvedModule(diagnostic);
-  if (moduleName && !moduleName.startsWith("@tavojs/core") && moduleName !== "tavo") {
+  if (
+    moduleName
+    && !moduleName.startsWith("@tavojs/core")
+    && !moduleName.startsWith("@tavojs/cli")
+  ) {
     return false;
   }
   return true;

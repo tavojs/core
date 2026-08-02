@@ -13,7 +13,7 @@ Node's newer unflagged `require(esm)` behavior; see the
 [Vite 7 migration guide](https://v7.vite.dev/guide/migration.html).
 
 ```bash
-npx tavo@latest create app my-app
+npx @tavojs/cli@latest create app my-app
 cd my-app
 npm install
 npm run dev
@@ -112,7 +112,7 @@ Maintainers should follow [docs/releasing.md](./docs/releasing.md) for versionin
 ## Packages
 
 - [`@tavojs/core`](./packages/core/README.md): runtime, framework, router, SSR, stores, and component APIs
-- [`tavo`](./packages/cli/README.md): application scaffolding, development, build, inspection, and verification CLI
+- [`@tavojs/cli`](./packages/cli/README.md): application scaffolding, development, build, inspection, and verification CLI
 
 ## License
 

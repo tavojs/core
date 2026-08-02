@@ -84,7 +84,7 @@ export async function createApp(
     "  },",
     '  "devDependencies": {',
     '    "@types/node": "^25.9.3",',
-    '    "tavo": "^1.0.0",',
+    '    "@tavojs/cli": "^1.0.0",',
     '    "typescript": "^5.9.3",',
     '    "vite": "^7.3.2"',
     "  }",
