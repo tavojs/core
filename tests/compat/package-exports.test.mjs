@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import semver from "semver";
 import ts from "typescript";
 
 const rootDir = path.resolve(new URL("../..", import.meta.url).pathname);
@@ -386,10 +387,12 @@ test("compat: public packages expose npm-ready metadata", async () => {
   assert.equal(corePackageJson.publishConfig?.registry, "https://registry.npmjs.org/");
   assert.equal(cliPackageJson.publishConfig?.registry, "https://registry.npmjs.org/");
   assert.deepEqual(cliPackageJson.bin, { tavo: "dist/tavo.mjs" });
-  assert.equal(corePackageJson.version, cliPackageJson.version);
   assert.equal(
-    cliPackageJson.dependencies?.["@tavojs/core"],
-    `^${corePackageJson.version}`
+    semver.satisfies(
+      corePackageJson.version,
+      cliPackageJson.dependencies?.["@tavojs/core"] ?? ""
+    ),
+    true
   );
 });
 
@@ -400,7 +403,7 @@ test("compat: publish reuses artifacts verified before concurrent workspace publ
   assert.match(workflow, /NPM_CONFIG_IGNORE_SCRIPTS: ["']true["']/);
 });
 
-test("compat: launch metadata advances both packages to 1.0 and scaffolds 1.x dependencies", async () => {
+test("compat: release metadata tracks package versions and scaffolds 1.x dependencies", async () => {
   const corePackageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
   const cliPackageJson = JSON.parse(await fs.readFile(path.join(cliDir, "package.json"), "utf8"));
   const coreChangelog = await fs.readFile(path.join(coreDir, "CHANGELOG.md"), "utf8");
@@ -410,8 +413,9 @@ test("compat: launch metadata advances both packages to 1.0 and scaffolds 1.x de
     "utf8"
   );
 
-  assert.equal(corePackageJson.version, "1.0.0");
+  assert.equal(corePackageJson.version, "1.0.1");
   assert.equal(cliPackageJson.version, "1.0.0");
+  assert.match(coreChangelog, /^## 1\.0\.1$/m);
   assert.match(coreChangelog, /^## 1\.0\.0$/m);
   assert.match(cliChangelog, /^## 1\.0\.0$/m);
   assert.match(coreChangelog, /Release the stable Tavo 1\.0 framework and CLI contracts/);
