@@ -14,7 +14,7 @@
     "url": "https://github.com/tavojs/core/issues"
   },
   "bin": {
-    "tavo": "./dist/tavo.mjs"
+    "tavo": "dist/tavo.mjs"
   },
   "publishConfig": {
     "access": "public",
