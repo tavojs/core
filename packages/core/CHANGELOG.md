@@ -1,5 +1,11 @@
 # @tavojs/core
 
+## 1.0.1
+
+### Patch Changes
+
+- Correct the npm installation and app-creation instructions to use the scoped `@tavojs/cli` package.
+
 ## 1.0.0
 
 ### Major Changes

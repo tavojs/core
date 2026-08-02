@@ -1,6 +1,6 @@
 {
   "name": "@tavojs/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight TSX framework with file-based routing, SSR, MVC components, and realtime stores.",
   "type": "module",
   "author": "Tavo contributors",
