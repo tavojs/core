@@ -19,8 +19,9 @@ npm run test:agent
 The gate validates the corpus and schemas, then measures the real CLI against a 100-route fixture.
 Compact context must remain at or below 8 KB, cold inspection below 500 ms, and cached inspection
 below 200 ms. Those timing targets are hard limits during local release verification. GitHub-hosted
-runners use transparent enforcement ceilings of 750 ms cold and 300 ms cached to absorb transient
-shared-runner CPU and filesystem contention; target misses still emit warnings in the Actions log.
+runners report target misses without failing because shared CPU and filesystem contention makes
+absolute wall-clock limits nondeterministic. Set `TAVO_ENFORCE_PERFORMANCE=1` on controlled CI
+hardware to enforce the local limits there too.
 
 ## Live Models
 

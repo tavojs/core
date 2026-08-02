@@ -8,9 +8,9 @@ import { agentEvaluationFixtures, agentEvaluationTasks } from "./corpus.mjs";
 const packageRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const cli = path.join(packageRoot, "dist", "tavo.mjs");
 const contextTargetsMs = { cold: 500, cached: 200 };
-const contextLimitsMs = process.env.GITHUB_ACTIONS === "true"
-  ? { cold: 750, cached: 300 }
-  : contextTargetsMs;
+const enforceContextTiming = process.env.GITHUB_ACTIONS !== "true"
+  || process.env.TAVO_ENFORCE_PERFORMANCE === "1";
+const contextLimitsMs = enforceContextTiming ? contextTargetsMs : null;
 const taskNames = new Set(["create-route", "modify-route", "create-component", "modify-component", "add-loader", "add-action", "modify-store", "style-ui", "repair"]);
 assert.ok(agentEvaluationTasks.length >= 40, "The certified corpus must contain at least 40 tasks.");
 assert.equal(new Set(agentEvaluationTasks.map((task) => task.id)).size, agentEvaluationTasks.length, "Task ids must be unique.");
@@ -50,16 +50,18 @@ function runContext() {
 }
 
 function assertContextDuration(label, durationMs, targetMs, limitMs) {
-  if (durationMs >= targetMs && limitMs > targetMs) {
+  if (durationMs >= targetMs) {
     console.warn(
       `[tavo agent evaluation] ${label} context took ${durationMs}ms; `
-      + `the target is below ${targetMs}ms and the GitHub Actions ceiling is below ${limitMs}ms.`
+      + `the target is below ${targetMs}ms.`
     );
+  }
+  if (limitMs === null) {
+    return;
   }
   assert.ok(
     durationMs < limitMs,
-    `${label} context took ${durationMs}ms; expected below ${targetMs}ms`
-      + (limitMs > targetMs ? ` with a GitHub Actions ceiling below ${limitMs}ms.` : ".")
+    `${label} context took ${durationMs}ms; expected below ${limitMs}ms.`
   );
 }
 
@@ -67,8 +69,8 @@ const cold = runContext();
 const warm = runContext();
 assert.ok(cold.metrics.bytes <= 8192, `Compact context was ${cold.metrics.bytes} bytes.`);
 assert.ok(cold.metrics.estimatedTokens <= 2000, `Compact context was approximately ${cold.metrics.estimatedTokens} tokens.`);
-assertContextDuration("Cold", cold.metrics.durationMs, contextTargetsMs.cold, contextLimitsMs.cold);
-assertContextDuration("Cached", warm.metrics.durationMs, contextTargetsMs.cached, contextLimitsMs.cached);
+assertContextDuration("Cold", cold.metrics.durationMs, contextTargetsMs.cold, contextLimitsMs?.cold ?? null);
+assertContextDuration("Cached", warm.metrics.durationMs, contextTargetsMs.cached, contextLimitsMs?.cached ?? null);
 assert.equal(cold.data.focus.file, "src/pages/route-50.tsx");
 
 await fs.rm(fixture, { recursive: true, force: true });
@@ -83,7 +85,8 @@ console.log(JSON.stringify({
     contextMs: {
       target: contextTargetsMs,
       enforced: contextLimitsMs,
-      environment: process.env.GITHUB_ACTIONS === "true" ? "github-actions" : "local"
+      environment: process.env.GITHUB_ACTIONS === "true" ? "github-actions" : "local",
+      enforcement: enforceContextTiming ? "blocking" : "report-only"
     }
   }
 }, null, 2));

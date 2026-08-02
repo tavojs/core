@@ -93,7 +93,7 @@ the user's global cache.
 
 ## Benchmarks
 
-`npm run benchmark` enforces platform-safe absolute ceilings. `npm run benchmark:check` also compares each matching benchmark against `packages/core/benchmarks/results/latest.json` and fails regressions above 35 percent. The relative margin absorbs normal CI variance while catching meaningful slowdowns below the absolute ceiling.
+`npm run benchmark` enforces platform-safe absolute ceilings. `npm run benchmark:check` also compares each matching benchmark against `packages/core/benchmarks/results/latest.json` and fails regressions above 35 percent. The relative margin absorbs normal variance while catching meaningful slowdowns below the absolute ceiling. GitHub-hosted CI runs `npm run benchmark:report` because shared runners cannot provide stable absolute timing; threshold misses remain visible in the job log without blocking functional checks. Enforce the default command on controlled performance hardware.
 
 Refresh the JSON baseline intentionally with `npm run benchmark:json` after reviewing a legitimate performance change; do not update it merely to hide a regression.
 
