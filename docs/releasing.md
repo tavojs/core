@@ -1,6 +1,6 @@
 # Releasing Tavo
 
-Tavo publishes `@tavojs/core` and `tavo` from the public
+Tavo publishes `@tavojs/core` and `@tavojs/cli` from the public
 [`tavojs/core`](https://github.com/tavojs/core) repository. The private development repository is
 not an npm publication source.
 
@@ -13,7 +13,7 @@ not an npm publication source.
 - Maintainers consume Changesets and generate versions and package changelogs in the private
   repository before creating the public sync pull request.
 - Publishing is a separate, manual GitHub Actions dispatch protected by the `npm` environment.
-- `@tavojs/core` publishes before `tavo` because the CLI depends on the core package.
+- `@tavojs/cli` depends on `@tavojs/core`; release verification builds, tests, and packs both before publication.
 
 ## Public Repository Bootstrap
 
@@ -87,7 +87,7 @@ Before accepting contributions:
    prevent self-review, and disallow protection-rule bypass.
 3. Protect `main`: require pull requests, CI status checks, resolved review conversations, and block
    force pushes and deletions.
-4. Protect package tags matching `@tavojs/core@*` and `tavo@*`.
+4. Protect package tags matching `@tavojs/core@*` and `@tavojs/cli@*`.
 5. Give GitHub Actions read/write workflow permission so the release workflow can create version
    pull requests, tags, and releases.
 
@@ -97,13 +97,13 @@ npm Trusted Publisher settings are attached to an existing package, so bootstrap
 with a short-lived granular npm token:
 
 1. Confirm both names are still available with `npm view @tavojs/core version` and
-   `npm view tavo version`; a 404 is expected before first publication. Owning the `@tavojs`
-   organization reserves the scoped name, but not the unscoped `tavo` name.
+   `npm view @tavojs/cli version`; a 404 is expected before first publication. The `@tavojs`
+   organization owns both scoped package names.
 2. Create a one-day granular npm token with **All Packages**, **Read and write**, and
    **Bypass two-factor authentication**. New package names cannot yet be selected individually.
 3. Store it as the `NPM_TOKEN` secret on the protected `npm` GitHub environment.
 4. In GitHub Actions, manually run the **Publish** workflow from `main`.
-5. Confirm both `@tavojs/core@1.0.0` and `tavo@1.0.0` exist on npm and their GitHub releases and tags
+5. Confirm both `@tavojs/core@1.0.0` and `@tavojs/cli@1.0.0` exist on npm and their GitHub releases and tags
    were created.
 
 The publish workflow runs the complete release verification before calling Changesets. Never
@@ -164,5 +164,5 @@ To inspect the exact package contents:
 
 ```bash
 npm pack --dry-run --workspace @tavojs/core
-npm pack --dry-run --workspace tavo
+npm pack --dry-run --workspace @tavojs/cli
 ```

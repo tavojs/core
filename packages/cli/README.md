@@ -1,4 +1,4 @@
-# tavo
+# @tavojs/cli
 
 CLI for creating, building, inspecting, and previewing Tavo apps.
 
@@ -7,7 +7,7 @@ CLI for creating, building, inspecting, and previewing Tavo apps.
 Create a new app:
 
 ```bash
-npx tavo@latest create app my-app
+npx @tavojs/cli@latest create app my-app
 cd my-app
 npm install
 npm run dev
@@ -20,7 +20,7 @@ npm run build
 npm run preview:ssr
 ```
 
-Tavo projects use `@tavojs/core` for the app runtime and `tavo` for local development, project inspection, generation, and build commands.
+Tavo projects use `@tavojs/core` for the app runtime and `@tavojs/cli` for local development, project inspection, generation, and build commands. The package installs the `tavo` executable.
 
 ## Common Commands
 
@@ -87,7 +87,7 @@ project fingerprint, data, diagnostics, next actions, and size/timing metrics. C
 is capped at 8 KB. Use targeted inspection instead of requesting the full inventory.
 
 Transactional change plans require SHA-256 preconditions for existing files and either commit every
-operation or roll the transaction back. Published schemas are available under `tavo/schemas`.
+operation or roll the transaction back. Published schemas are available under `@tavojs/cli/schemas`.
 
 `tavo monitor` reads the built-in `/_tavo/monitor` endpoint and refreshes in realtime. Generated SSR servers keep the endpoint hidden until `TAVO_MONITOR_TOKEN` is configured; pass the same value with `--token` or through the CLI environment.
 

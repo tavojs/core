@@ -553,7 +553,7 @@ Framework changes should run:
 
 ```bash
 npm --workspace @tavojs/core run test:integration
-npm --workspace tavo run test
+npm --workspace @tavojs/cli run test
 npm run test:compat
 npm run check:structure
 git diff --check

@@ -139,7 +139,7 @@ jobs:
         run: npm ci
 
       - name: Build CLI
-        run: npm --workspace tavo run build
+        run: npm --workspace @tavojs/cli run build
 
       - name: Source Structure
         run: npm run check:structure

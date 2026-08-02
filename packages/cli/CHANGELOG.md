@@ -1,4 +1,4 @@
-# tavo
+# @tavojs/cli
 
 ## 1.0.0
 

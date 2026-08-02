@@ -100,7 +100,7 @@ test("createApp scaffolds a usable Tavo project shape without overwriting existi
   assert.equal(packageJson.scripts["dev:csr"], "vite");
   assert.equal(packageJson.scripts["preview:csr"], "vite preview");
   assert.equal(packageJson.dependencies["@tavojs/core"], "^1.0.0");
-  assert.equal(packageJson.devDependencies.tavo, "^1.0.0");
+  assert.equal(packageJson.devDependencies["@tavojs/cli"], "^1.0.0");
   assert.equal(packageJson.devDependencies["@types/node"], "^25.9.3");
 
   const tsconfig = JSON.parse(await fs.readFile(path.join(root, "tsconfig.json"), "utf8"));
@@ -167,7 +167,10 @@ test("createApp scaffolds a usable Tavo project shape without overwriting existi
   assert.equal(agentManifest.conventions.preferredPageApi, "functional-module");
   assert.equal(agentManifest.conventions.optionalTypedPageApi, "defineRoutePage");
   assert.ok(agentManifest.tasks.includes("repair"));
-  assert.equal(agentManifest.schemas.changePlan, "tavo/schemas/change-plan-v1.schema.json");
+  assert.equal(
+    agentManifest.schemas.changePlan,
+    "@tavojs/cli/schemas/change-plan-v1.schema.json"
+  );
   assert.equal(agentManifest.documentation.index, "https://tavojs.dev/llms.txt");
   assert.equal(agentManifest.documentation.mcpStatusResource, "tavo://status");
 

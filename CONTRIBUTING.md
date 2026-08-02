@@ -24,7 +24,7 @@ budgets rather than informational benchmarks.
 ## Repository Structure
 
 - `packages/core`: published `@tavojs/core` runtime and tests
-- `packages/cli`: published `tavo` CLI and tests
+- `packages/cli`: published `@tavojs/cli` package, `tavo` executable, and tests
 - `docs`: user-facing framework guides
 - `preview`: integration and browser-test application
 - `tests`: compatibility and end-to-end test support

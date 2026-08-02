@@ -7,9 +7,9 @@ previewing, and operating a Tavo application.
 
 ## Install and Run
 
-Generated applications install `tavo` as a development dependency and expose stable commands through
+Generated applications install `@tavojs/cli` as a development dependency and expose the `tavo` command through
 npm scripts. Prefer those scripts or `npx tavo` from the project root so local development and CI use
-the version recorded in the lockfile. Use `npx tavo@latest create app` only for a new project.
+the version recorded in the lockfile. Use `npx @tavojs/cli@latest create app` only for a new project.
 
 ## Common Commands
 

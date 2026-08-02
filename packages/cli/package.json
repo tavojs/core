@@ -1,5 +1,5 @@
 {
-  "name": "tavo",
+  "name": "@tavojs/cli",
   "version": "1.0.0",
   "description": "CLI for creating, building, inspecting, and previewing Tavo apps.",
   "type": "module",

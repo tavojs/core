@@ -15,7 +15,7 @@ const releaseWorkflowPath = path.join(rootDir, ".github/workflows/release.yml");
 const canonicalRepositoryUrl = "git+https://github.com/tavojs/core.git";
 const canonicalHomepages = {
   "@tavojs/core": "https://tavojs.dev/docs/core",
-  tavo: "https://tavojs.dev/docs/cli"
+  "@tavojs/cli": "https://tavojs.dev/docs/cli"
 };
 const canonicalBugsUrl = "https://github.com/tavojs/core/issues";
 const supportedNodeRange = "^20.19.0 || >=22.12.0";
@@ -380,7 +380,7 @@ test("compat: public packages expose npm-ready metadata", async () => {
 
   assert.equal(rootPackageJson.private, true);
   assertPublicPackageMetadata(corePackageJson, "@tavojs/core", "packages/core", ["tavo", "file-based-routing", "mvc"]);
-  assertPublicPackageMetadata(cliPackageJson, "tavo", "packages/cli", ["tavo", "cli", "file-based-routing", "vite"]);
+  assertPublicPackageMetadata(cliPackageJson, "@tavojs/cli", "packages/cli", ["tavo", "cli", "file-based-routing", "vite"]);
   assert.equal(corePackageJson.publishConfig?.access, "public");
   assert.equal(cliPackageJson.publishConfig?.access, "public");
   assert.equal(corePackageJson.publishConfig?.registry, "https://registry.npmjs.org/");
@@ -417,7 +417,7 @@ test("compat: launch metadata advances both packages to 1.0 and scaffolds 1.x de
   assert.match(coreChangelog, /Release the stable Tavo 1\.0 framework and CLI contracts/);
   assert.match(cliChangelog, /Release the stable Tavo 1\.0 framework and CLI contracts/);
   assert.match(scaffoldSource, /"@tavojs\/core": "\^1\.0\.0"/);
-  assert.match(scaffoldSource, /"tavo": "\^1\.0\.0"/);
+  assert.match(scaffoldSource, /"@tavojs\/cli": "\^1\.0\.0"/);
 });
 
 test("compat: core npm pack dry-run contains metadata, license, and built dist files", async () => {
@@ -437,7 +437,7 @@ test("compat: core npm pack dry-run contains metadata, license, and built dist f
 test("compat: cli npm pack dry-run contains metadata, license, executable, and schema", async () => {
   const pack = await npmPackDryRun(cliDir);
   const files = new Set(pack.files.map((entry) => entry.path));
-  assert.equal(pack.name, "tavo");
+  assert.equal(pack.name, "@tavojs/cli");
   assert.ok(files.has("package.json"));
   assert.ok(files.has("LICENSE"));
   assert.ok(files.has("README.md"));

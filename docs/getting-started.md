@@ -49,7 +49,7 @@ in its lockfile through package scripts or `npx tavo`.
 For a new app:
 
 ```bash
-npx tavo@latest create app my-app
+npx @tavojs/cli@latest create app my-app
 cd my-app
 npm install
 npm run dev
