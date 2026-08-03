@@ -26,7 +26,7 @@ export const i18n = createI18n({
         eyebrow: "Localization",
         title: "Translations are plain objects in the view",
         intro:
-          "Tavo lets views read translations directly from i18n.text while the framework keeps locale changes reactive.",
+          "Tavo.js lets views read translations directly from i18n.text while the framework keeps locale changes reactive.",
         greeting: "Hello {name}, this string came from i18n.t().",
       },
       actions: {
@@ -54,7 +54,7 @@ export const i18n = createI18n({
         eyebrow: "Localizacion",
         title: "Las traducciones son objetos simples en la vista",
         intro:
-          "Tavo permite leer traducciones desde i18n.text mientras el framework mantiene reactivos los cambios de idioma.",
+          "Tavo.js permite leer traducciones desde i18n.text mientras el framework mantiene reactivos los cambios de idioma.",
         greeting: "Hola {name}, este texto viene de i18n.t().",
       },
       actions: {
@@ -82,7 +82,7 @@ export const i18n = createI18n({
         eyebrow: "Տեղայնացում",
         title: "Թարգմանությունները view-ում սովորական օբյեկտներ են",
         intro:
-          "Tavo-ում կարելի է կարդալ i18n.text-ից, իսկ framework-ը locale-ի փոփոխությունները պահում է ռեակտիվ։",
+          "Tavo.js-ում կարելի է կարդալ i18n.text-ից, իսկ framework-ը locale-ի փոփոխությունները պահում է ռեակտիվ։",
         greeting: "Բարեւ {name}, այս տեքստը գալիս է i18n.t()-ից։",
       },
       actions: {

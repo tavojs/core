@@ -3,7 +3,7 @@
 > Online guide:
 > [tavojs.dev/docs/core/actions-and-forms](https://tavojs.dev/docs/core/actions-and-forms)
 
-Tavo integrates with schema libraries through the Standard Schema interface and common `safeParse`/`parse` contracts. No validator is required by the framework.
+Tavo.js integrates with schema libraries through the Standard Schema interface and common `safeParse`/`parse` contracts. No validator is required by the framework.
 
 ## Validate Values
 

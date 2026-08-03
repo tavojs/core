@@ -2,7 +2,7 @@
   "name": "@tavojs/monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Workspace for the Tavo framework core package, CLI, previews, docs, and tests.",
+  "description": "Workspace for the Tavo.js framework core package, CLI, previews, docs, and tests.",
   "type": "module",
   "workspaces": [
     "packages/core",

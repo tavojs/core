@@ -24,7 +24,7 @@ export type {
   TavoContext
 } from "./types.js";
 
-/** Creates the internal provider vnode used by Tavo context. */
+/** Creates the internal provider vnode used by Tavo.js context. */
 export function createProviderNode<T>(
   context: TavoContext<T>,
   props: ContextProviderProps<T>

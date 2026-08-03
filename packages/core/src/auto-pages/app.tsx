@@ -220,7 +220,7 @@ export function discoverPagesModules(pattern = "/src/pages/**/*.{js,jsx,ts,tsx}"
     throw new TavoError(
       "TAVO_PAGES_004",
       "tavo pages: import.meta.glob is unavailable. Use a Vite-like bundler or pass modules explicitly.",
-      { hint: "Use the Tavo Vite configuration helper or pass a modules object to bootTavo()." }
+      { hint: "Use the Tavo.js Vite configuration helper or pass a modules object to bootTavo()." }
     );
   }
 }

@@ -65,7 +65,7 @@ function shouldHydrateRoot(root: Element, options?: BootTavoOptions): boolean {
   return Boolean(options?.hydrate);
 }
 
-/** Returns the boot mode Tavo will use for the current document. */
+/** Returns the boot mode Tavo.js will use for the current document. */
 export function getTavoBootMode(options?: Pick<BootTavoOptions, "root" | "rootSelector" | "hydrate">): TavoBootMode {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return "server";
@@ -236,7 +236,7 @@ async function runBootTavo(
   return { mode: "server", handle, modules };
 }
 
-/** Boots the default Tavo app behavior for projects that use file-based pages. */
+/** Boots the default Tavo.js app behavior for projects that use file-based pages. */
 export function bootTavo(options?: BootTavoOptions): Promise<BootTavoResult> {
   return runBootTavo({
     rootSelector: "#app",

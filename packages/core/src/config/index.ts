@@ -106,14 +106,14 @@ function isPromiseLike(value: unknown): value is Promise<TavoViteConfig> {
   return Boolean(value && typeof value === "object" && "then" in value);
 }
 
-/** Lets Tavo plugins extend Vite config while keeping app config in `tavo.config`. */
+/** Lets Tavo.js plugins extend Vite config while keeping app config in `tavo.config`. */
 async function withTavoPluginViteConfig<T extends TavoViteConfig>(config: T, env: TavoViteConfigEnv): Promise<T> {
   const root = typeof config.root === "string" ? config.root : ".";
   const tavoConfig = await loadTavoConfig(root, { mode: env.mode });
   return applyPluginBuildConfig(config, tavoConfig.plugins);
 }
 
-/** Applies Tavo's JSX runtime settings to a plain Vite config object. */
+/** Applies Tavo.js's JSX runtime settings to a plain Vite config object. */
 function withTavoViteDefaults<T extends TavoViteConfig>(
   config: T,
 ): T & {
@@ -152,7 +152,7 @@ function withTavoViteDefaults<T extends TavoViteConfig>(
   };
 }
 
-/** Defines a Vite config with the JSX runtime settings required by Tavo. */
+/** Defines a Vite config with the JSX runtime settings required by Tavo.js. */
 export function defineTavoViteConfig(config: TavoViteConfigExport = {}): TavoViteConfigExport {
   if (typeof config === "function") {
     return (env: TavoViteConfigEnv) => {

@@ -201,7 +201,7 @@ test("loadTavoConfig propagates evaluation errors and rejects missing or invalid
       );
       await assert.rejects(
         loadTavoConfig(root),
-        /Every Tavo project must define one root tavo\.config\.ts file/,
+        /Every Tavo\.js project must define one root tavo\.config\.ts file/,
       );
     } finally {
       await fs.rm(root, { recursive: true, force: true });
@@ -269,7 +269,7 @@ test("loadTavoConfig ignores package-specific top-level config owned outside cor
   }
 });
 
-test("defineTavoViteConfig loads server env before evaluating Tavo plugin config", async () => {
+test("defineTavoViteConfig loads server env before evaluating Tavo.js plugin config", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "tavo-config-env-"));
   const previousCwd = process.cwd();
   const previousSecret = process.env.SESSION_SECRET;

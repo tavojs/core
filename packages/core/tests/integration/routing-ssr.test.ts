@@ -371,7 +371,7 @@ test("routing: load errors render _error page", async () => {
   assert.match(html, /error:Error: boom/);
 });
 
-test("routing: pending and error page exports render as Tavo components", async () => {
+test("routing: pending and error page exports render as Tavo.js components", async () => {
   let releasePageLoad!: () => void;
   let publishPending!: (value: any) => void;
   const pendingPublished = new Promise<any>((resolve) => {

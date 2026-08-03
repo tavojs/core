@@ -256,7 +256,7 @@ class ActionDemoController {
   }
 
   runAction() {
-    saveGreetingAction.run({ name: "Tavo Developer" });
+    saveGreetingAction.run({ name: "Tavo.js Developer" });
   }
 
   runError() {

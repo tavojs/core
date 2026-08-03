@@ -9,7 +9,7 @@ import type {
   TavoPluginPhase,
 } from "./types.js";
 
-/** Current public contract implemented by the Tavo plugin runtime. */
+/** Current public contract implemented by the Tavo.js plugin runtime. */
 export const TAVO_PLUGIN_API_VERSION = 1 as const;
 
 export function defineCapability<

@@ -61,7 +61,7 @@ export function createInstrumentation(listener: TavoInstrumentationListener): Ta
   };
 }
 
-/** Adapts Tavo events to the stable tracing subset shared by OpenTelemetry implementations. */
+/** Adapts Tavo.js events to the stable tracing subset shared by OpenTelemetry implementations. */
 export function createOpenTelemetryInstrumentation(
   tracer: OpenTelemetryTracerLike,
   options?: { recordErrors?: boolean }
@@ -102,10 +102,10 @@ export function createOpenTelemetryInstrumentation(
     if (spans?.length === 0) pending.delete(key);
     for (const [name, value] of Object.entries(attributesFor(event))) span.setAttribute?.(name, value);
     if (event.phase === "error") {
-      span.setStatus?.({ code: 2, message: "Tavo operation failed" });
+      span.setStatus?.({ code: 2, message: "Tavo.js operation failed" });
       if (options?.recordErrors && event.error !== undefined) span.recordException?.(event.error);
     } else if (event.phase === "abort") {
-      span.setStatus?.({ code: 2, message: "Tavo operation aborted" });
+      span.setStatus?.({ code: 2, message: "Tavo.js operation aborted" });
     } else {
       span.setStatus?.({ code: 1 });
     }

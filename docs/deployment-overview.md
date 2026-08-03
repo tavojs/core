@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/deployment](https://tavojs.dev/docs/core/deployment)
 
-Tavo produces two provider-neutral deployment outputs:
+Tavo.js produces two provider-neutral deployment outputs:
 
 - `.tavo/build/client` contains browser assets and prerendered HTML for static hosting.
 - `.tavo/build/server/start.mjs` is the generated Node production server.

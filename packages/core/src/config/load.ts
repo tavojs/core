@@ -6,7 +6,7 @@ export type LoadTavoConfigOptions = {
   mode?: string;
 };
 
-/** Keeps core configuration isolated from fields owned by other Tavo packages. */
+/** Keeps core configuration isolated from fields owned by other Tavo.js packages. */
 function normalizeTavoConfig(value: unknown): TavoConfig {
   if (
     !value
@@ -121,7 +121,7 @@ export async function loadTavoConfig(
       await fsModule.access(absolute);
     } catch {
       throw new Error(
-        `tavo config: expected ${absolute}. Every Tavo project must define `
+        `tavo config: expected ${absolute}. Every Tavo.js project must define `
         + "one root tavo.config.ts file.",
       );
     }

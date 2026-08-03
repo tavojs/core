@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/api-stability](https://tavojs.dev/docs/core/api-stability)
 
-Tavo labels every public package entry point as `stable` or `experimental`. The labels are part of
+Tavo.js labels every public package entry point as `stable` or `experimental`. The labels are part of
 the 1.0 compatibility contract.
 
 ## Stability Levels
@@ -29,7 +29,7 @@ instrumentation, validation, scheduling, devtools, and testing helpers and is ex
 experimental. JSX runtime paths and the `server-only` marker are stable technical integration
 boundaries rather than feature namespaces.
 
-Generated route types and build manifests include a schema version. Applications should generate these artifacts with the same Tavo CLI used for the build; project diagnostics warn when route artifacts use an incompatible schema.
+Generated route types and build manifests include a schema version. Applications should generate these artifacts with the same Tavo.js CLI used for the build; project diagnostics warn when route artifacts use an incompatible schema.
 
 ## Stable Diagnostic Codes
 

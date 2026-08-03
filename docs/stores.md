@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/stores](https://tavojs.dev/docs/core/stores)
 
-This guide covers Tavo’s reactive store model.
+This guide covers Tavo.js’s reactive store model.
 
 ## `createStore(...)`
 
@@ -116,7 +116,7 @@ counterStore.patch((previous) => ({
 }));
 ```
 
-For stores without action methods, this is a common update style in Tavo app code. For action-oriented stores, prefer putting mutations in initializer methods that call the initializer `set(...)` helper.
+For stores without action methods, this is a common update style in Tavo.js app code. For action-oriented stores, prefer putting mutations in initializer methods that call the initializer `set(...)` helper.
 
 ## `subscribe(...)`
 

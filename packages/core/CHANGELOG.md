@@ -1,5 +1,14 @@
 # @tavojs/core
 
+## 1.0.2
+
+### Patch Changes
+
+- 2958197: Correct package author and copyright attribution, and add the project trademark, DCO
+  contribution, and private security-reporting policies.
+- Standardize public product naming as Tavo.js across documentation, generated application copy,
+  schemas, diagnostics, and package metadata.
+
 ## 1.0.1
 
 ### Patch Changes
@@ -10,7 +19,7 @@
 
 ### Major Changes
 
-- Release the stable Tavo 1.0 framework and CLI contracts. This release establishes functional page
+- Release the stable Tavo.js 1.0 framework and CLI contracts. This release establishes functional page
   modules, static prerendering, Node server output, Plugin API v1, one project configuration file,
   stable package boundaries, and launch-grade documentation and verification. The public import map
   is consolidated around the package root plus router, server, config, plugin, and development
@@ -18,7 +27,7 @@
 
 ### Minor Changes
 
-- Make Tavo faster, safer, and easier to operate in production. This release adds end-to-end async
+- Make Tavo.js faster, safer, and easier to operate in production. This release adds end-to-end async
   cancellation, tagged cache invalidation and request deduplication, stable diagnostics and artifact
   schemas, stricter client/server boundaries, structured OpenTelemetry-compatible instrumentation,
   validated actions, prioritized scheduling, runtime devtools, plugin API compatibility checks, and
@@ -43,4 +52,4 @@
   defaults, and `{ use, overrides }` preserves advanced replacement. Plugin inspection reports the
   effective permission and exposure audit with human-readable reasons.
 
-  Add plugin graph inspection and automatic plugin preflight to the Tavo CLI.
+  Add plugin graph inspection and automatic plugin preflight to the Tavo.js CLI.

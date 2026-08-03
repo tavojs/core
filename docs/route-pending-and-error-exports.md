@@ -3,7 +3,7 @@
 > Online guide:
 > [tavojs.dev/docs/core/pages-and-layouts](https://tavojs.dev/docs/core/pages-and-layouts)
 
-Tavo pages can export route-specific `pending` and `error` components alongside their loader and
+Tavo.js pages can export route-specific `pending` and `error` components alongside their loader and
 default page component.
 
 Use these exports when a page loader may take long enough that users need immediate feedback, or
@@ -69,7 +69,7 @@ export default function ReportPage({ data }: PageProps<Report>) {
 
 ## Navigation Behavior
 
-For client-side navigation to a page with a `pending` export, Tavo follows this sequence:
+For client-side navigation to a page with a `pending` export, Tavo.js follows this sequence:
 
 1. Change the browser URL to the target page.
 2. Run route middleware.
@@ -82,12 +82,12 @@ For client-side navigation to a page with a `pending` export, Tavo follows this 
 The default page component and its controller do not mount until the page loader has completed.
 This preserves the guarantee that the completed page starts with resolved loader data.
 
-If a page does not export `pending`, Tavo preserves the existing behavior: the previous page
+If a page does not export `pending`, Tavo.js preserves the existing behavior: the previous page
 remains visible while the target route loads, and the route content region is marked as busy.
 
 ## Pending Components
 
-The `pending` export is a normal Tavo component definition. It can be a function component:
+The `pending` export is a normal Tavo.js component definition. It can be a function component:
 
 ```tsx
 import type { PagePendingProps } from "@tavojs/core/router";
@@ -187,7 +187,7 @@ A `notFound()` signal is not treated as a loader error. It bypasses both error v
 
 ## Layout Data
 
-Tavo waits for target layout loaders before rendering the page's pending component. This allows
+Tavo.js waits for target layout loaders before rendering the page's pending component. This allows
 the pending UI to appear inside the correct application or section layout with valid layout data.
 
 ```tsx
@@ -202,7 +202,7 @@ export function pending({ layerData }: PagePendingProps) {
 }
 ```
 
-If a layout loader fails, Tavo proceeds to error handling instead of rendering the page pending
+If a layout loader fails, Tavo.js proceeds to error handling instead of rendering the page pending
 component with invalid layout state.
 
 ## SSR And Prefetching
@@ -216,7 +216,7 @@ It is not rendered during:
 - Route prefetching
 - Navigation resolved entirely from a fresh route cache entry
 
-During SSR, Tavo waits for the route loader and sends the completed page or its error view. For
+During SSR, Tavo.js waits for the route loader and sends the completed page or its error view. For
 progressive server-rendered sections, use deferred rendering and streaming rather than the route
 pending export.
 
@@ -234,7 +234,7 @@ export async function load({ signal }: PageLoadContext) {
 }
 ```
 
-When navigation is replaced by another navigation, Tavo:
+When navigation is replaced by another navigation, Tavo.js:
 
 - aborts the obsolete route resolution;
 - removes its pending component;

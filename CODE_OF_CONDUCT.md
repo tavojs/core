@@ -1,6 +1,6 @@
 # Code of Conduct
 
-Tavo is committed to a welcoming, constructive, and harassment-free community.
+Tavo.js is committed to a welcoming, constructive, and harassment-free community.
 
 ## Expected Behavior
 

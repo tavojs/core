@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/localization](https://tavojs.dev/docs/core/localization)
 
-Tavo localization is built around MVC-friendly services. Create one i18n service in your app, import it where needed, and read translations directly as an object in views.
+Tavo.js localization is built around MVC-friendly services. Create one i18n service in your app, import it where needed, and read translations directly as an object in views.
 
 ```ts
 import { createI18n } from "@tavojs/core";
@@ -33,7 +33,7 @@ export const i18n = createI18n({
 
 ## Direct View Access
 
-`i18n.text` is reactive. When it is read during a Tavo render, the component is connected to the active locale messages.
+`i18n.text` is reactive. When it is read during a Tavo.js render, the component is connected to the active locale messages.
 
 ```tsx
 import { createTavo } from "@tavojs/core";
@@ -90,7 +90,7 @@ type TranslationKey = I18nTranslationKey<typeof i18n.messages.en>;
 
 ## Locale Routing
 
-Enable locale-prefix routing with `routing.enabled`. Tavo can then resolve localized URLs while matching the normal page route.
+Enable locale-prefix routing with `routing.enabled`. Tavo.js can then resolve localized URLs while matching the normal page route.
 
 ```ts
 i18n.resolvePath("/es/about");

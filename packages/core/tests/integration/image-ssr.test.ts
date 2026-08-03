@@ -206,7 +206,7 @@ test("ssr: Script renders preload and JSON-LD safely", () => {
       json: {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        name: "Tavo <Framework>"
+        name: "Tavo.js <Framework>"
       }
     })
   ]);
@@ -214,14 +214,14 @@ test("ssr: Script renders preload and JSON-LD safely", () => {
   assert.match(html, /rel="preload" as="script" href="\/analytics\.js"/);
   assert.match(html, /<script src="\/analytics\.js" defer><\/script>/);
   assert.match(html, /type="application\/ld\+json"/);
-  assert.match(html, /Tavo \\u003cFramework>/);
+  assert.match(html, /Tavo\.js \\u003cFramework>/);
 });
 
 test("ssr: Seo renders title, canonical, and social metadata", () => {
   const html = renderDocument(
     h("main", null, h(Seo, {
-      title: "Tavo SEO",
-      description: "SEO metadata for Tavo pages.",
+      title: "Tavo.js SEO",
+      description: "SEO metadata for Tavo.js pages.",
       canonical: "https://tavojs.dev/seo",
       noIndex: true,
       keywords: ["tavo", "seo", "ssr"],
@@ -229,7 +229,7 @@ test("ssr: Seo renders title, canonical, and social metadata", () => {
       openGraph: {
         type: "website",
         image: "https://tavojs.dev/og.png",
-        siteName: "Tavo"
+        siteName: "Tavo.js"
       },
       twitter: {
         card: "summary_large_image",
@@ -240,8 +240,8 @@ test("ssr: Seo renders title, canonical, and social metadata", () => {
   const head = html.slice(html.indexOf("<head>"), html.indexOf("</head>"));
   const app = html.slice(html.indexOf('<div id="app">'), html.indexOf("</body>"));
 
-  assert.match(head, /<title>Tavo SEO<\/title>/);
-  assert.match(head, /name="description" content="SEO metadata for Tavo pages\."/);
+  assert.match(head, /<title>Tavo\.js SEO<\/title>/);
+  assert.match(head, /name="description" content="SEO metadata for Tavo\.js pages\."/);
   assert.match(head, /rel="canonical" href="https:\/\/tavojs\.dev\/seo"/);
   assert.match(head, /name="robots" content="noindex"/);
   assert.match(head, /property="og:image" content="https:\/\/tavojs\.dev\/og\.png"/);

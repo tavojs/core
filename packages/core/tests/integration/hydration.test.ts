@@ -1087,7 +1087,7 @@ test("bootTavo warns for static CSR post forms when csrActions are not configure
   }
 });
 
-test("bootTavo csrActions follows same-origin redirects through Tavo navigation", async () => {
+test("bootTavo csrActions follows same-origin redirects through Tavo.js navigation", async () => {
   const originalFetch = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = (async () => {

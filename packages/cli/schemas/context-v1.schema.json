@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tavojs.dev/schemas/context-v1.schema.json",
-  "title": "Tavo Agent Context v1 Data",
+  "title": "Tavo.js Agent Context v1 Data",
   "type": "object",
   "required": ["framework", "protocolVersion", "protocolStability", "task", "target", "detail", "project", "conventions", "focus", "api", "recipes", "commands"],
   "properties": {

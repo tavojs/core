@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/plugins](https://tavojs.dev/docs/core/plugins)
 
-Tavo Plugin API v1 packages framework features as owned, declarative contributions. Tavo compiles
+Tavo.js Plugin API v1 packages framework features as owned, declarative contributions. Tavo.js compiles
 the complete plugin graph before it loads phase implementations, so dependencies, mounts,
 capabilities, routes, and other shared resources are validated before plugin phase code runs.
 
@@ -12,7 +12,7 @@ contract for ownership identities, collision keys, lifecycle ordering, diagnosti
 responsibilities.
 
 Plugins are trusted application dependencies. The ownership and capability rules prevent accidental
-access through Tavo APIs, but they are not a JavaScript sandbox. A server or build plugin still has
+access through Tavo.js APIs, but they are not a JavaScript sandbox. A server or build plugin still has
 the privileges of the host process, and client plugin code has the privileges of the application
 page.
 
@@ -107,7 +107,7 @@ ID, instance ID, and local contribution key.
 Disabled installs do not enter the graph. Phase modules are not loaded until the remaining graph
 has passed preflight.
 
-Tavo normalizes descriptors, manifest permissions, manifest exposure, application remapping, and
+Tavo.js normalizes descriptors, manifest permissions, manifest exposure, application remapping, and
 overrides into an internal graph before compilation. Application code supplies only `plugins:
 [...]` or the `{ use, overrides }` form.
 
@@ -146,7 +146,7 @@ default tie-breaker for contributions that do not declare a more specific order.
 ## Runtime And Request State
 
 Each application runtime owns an independent plugin container. Runtime-scoped factories initialize
-transactionally in dependency order. If one fails, Tavo disposes resources already created for that
+transactionally in dependency order. If one fails, Tavo.js disposes resources already created for that
 runtime in reverse order and aborts startup.
 
 Use `definePluginStore()` for plugin-owned runtime state. A store is private unless a consumer
@@ -255,7 +255,7 @@ framework internals; application code should configure plugins through `defineCo
 
 - Keep the plugin `id`, capability tokens, and local contribution keys stable across compatible
   releases.
-- Declare accurate provider version ranges and test the oldest and newest supported Tavo versions.
+- Declare accurate provider version ranges and test the oldest and newest supported Tavo.js versions.
 - Keep client, server, and build entrypoints separate; do not import a server phase from a client
   module.
 - Test graph preflight, startup rollback, request disposal, SSR, and the browser bundle for every

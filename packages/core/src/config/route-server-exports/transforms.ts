@@ -68,7 +68,7 @@ export function assertClientRouteActionsWereRemoved(code: string, file: string):
     && !objectAssignedPage
   ) return;
   throw new Error([
-    "Tavo could not safely remove a route action from the client bundle.",
+    "Tavo.js could not safely remove a route action from the client bundle.",
     `Module: ${file}`,
     "Declare it as `export const action = defineAction(...)` and reference that " +
       "binding from `defineRoutePage(...)`.",
@@ -250,7 +250,7 @@ export function assertClientRouteServerHelpersWereRemoved(code: string, file: st
     );
   if (!residualHelper && !residualRuntime && !residualLoader && !residualMiddleware) return;
   throw new Error([
-    "Tavo could not safely remove a server-only route export from the client bundle.",
+    "Tavo.js could not safely remove a server-only route export from the client bundle.",
     `Module: ${file}`,
     "Export server loaders and middleware directly as typed or untyped const declarations.",
     "Keep server-only secrets and imports inside those initializers or in src/server modules."

@@ -2,7 +2,7 @@
 
 > Online learning path: [tavojs.dev/docs/getting-started](https://tavojs.dev/docs/getting-started)
 
-Create a working Tavo 1.x application first, then use the rest of this guide to understand the
+Create a working Tavo.js 1.x application first, then use the rest of this guide to understand the
 generated runtime and public package boundaries.
 
 ## Prerequisites
@@ -16,12 +16,12 @@ generated runtime and public package boundaries.
 - Create and run the generated application.
 - Identify the route, bootstrap, configuration, and styling boundaries.
 - Verify the same route in CSR and SSR development.
-- Know where local component state, shared stores, server work, and optional Tavo UI belong.
+- Know where local component state, shared stores, server work, and optional Tavo.js UI belong.
 
-## What Tavo Is
+## What Tavo.js Is
 
-Tavo is a TypeScript and TSX framework with its own component runtime; it is not a React wrapper.
-Vite supplies the development server and bundling pipeline, while Tavo adds file routes, request
+Tavo.js is a TypeScript and TSX framework with its own component runtime; it is not a React wrapper.
+Vite supplies the development server and bundling pipeline, while Tavo.js adds file routes, request
 data, client and server rendering, hydration, state, and production output.
 
 Its optional MVC component model separates:
@@ -30,7 +30,7 @@ Its optional MVC component model separates:
 - `controller`: business logic, subscriptions, navigation, async work
 - `view`: a TSX function that renders output
 
-Tavo also ships:
+Tavo.js also ships:
 
 - file-based pages
 - reactive stores
@@ -38,7 +38,7 @@ Tavo also ships:
 - streaming deferred sections
 - framework-managed SEO components
 
-Tavo UI is a separate, optional package for accessible interface components, responsive styling,
+Tavo.js UI is a separate, optional package for accessible interface components, responsive styling,
 and project-owned themes. Framework applications do not require it.
 
 ## Create The Application
@@ -68,7 +68,7 @@ npm run dev:ssr
 
 The website’s cumulative
 [first-app tutorial](https://tavojs.dev/docs/getting-started/first-app) adds route data, local state,
-controller behavior, Tavo UI, navigation, CSR, and SSR with a checkpoint after each change.
+controller behavior, Tavo.js UI, navigation, CSR, and SSR with a checkpoint after each change.
 
 ## Understand The Generated Vite Setup
 
@@ -116,7 +116,7 @@ void bootTavo({
 });
 ```
 
-`bootTavo()` is the public default bootstrap API for file-based Tavo apps. It:
+`bootTavo()` is the public default bootstrap API for file-based Tavo.js apps. It:
 
 - discovers page modules
 - builds the page manifest
@@ -134,7 +134,7 @@ Create `src/pages/index.tsx`:
 
 ```tsx
 export default function HomePage() {
-  return <main>Hello from Tavo</main>;
+  return <main>Hello from Tavo.js</main>;
 }
 ```
 
@@ -146,7 +146,7 @@ import type { PageProps } from "@tavojs/core/router";
 export const head = <title>Home</title>;
 
 export async function load() {
-  return { greeting: "Hello from Tavo" };
+  return { greeting: "Hello from Tavo.js" };
 }
 
 export default function HomePage({ data }: PageProps<{ greeting: string }>) {
@@ -163,14 +163,14 @@ import { defineRoutePage } from "@tavojs/core/router";
 export default defineRoutePage("/", {
   head: <title>Home</title>,
   default() {
-    return <main>Hello from Tavo</main>;
+    return <main>Hello from Tavo.js</main>;
   },
 });
 ```
 
 ## Project Shape
 
-A typical Tavo project looks like this:
+A typical Tavo.js project looks like this:
 
 ```text
 src/
@@ -203,7 +203,7 @@ Import stable application APIs from `@tavojs/core`:
 import { Seo, createTavo } from "@tavojs/core";
 ```
 
-Tavo intentionally keeps its import map small:
+Tavo.js intentionally keeps its import map small:
 
 - `@tavojs/core` for application APIs
 - `@tavojs/core/router` for routing and navigation

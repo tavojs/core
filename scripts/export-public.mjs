@@ -41,6 +41,7 @@ const publicEntries = [
   "LICENSE",
   "README.md",
   "SECURITY.md",
+  "TRADEMARKS.md",
   "docs",
   "package-lock.json",
   "package.json",

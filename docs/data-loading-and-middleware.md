@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/data-and-middleware](https://tavojs.dev/docs/core/data-and-middleware)
 
-This guide explains how route data, middleware, and route status work in Tavo.
+This guide explains how route data, middleware, and route status work in Tavo.js.
 
 ## Loaders
 
@@ -105,17 +105,17 @@ export default function ReportPage({ data }: PageProps<Report>) {
 }
 ```
 
-For browser navigation, Tavo changes the URL, resolves middleware and target layout loaders,
+For browser navigation, Tavo.js changes the URL, resolves middleware and target layout loaders,
 then renders `pending` while the page loader runs. The target layouts wrap the pending component
-with their resolved layout data. When loading succeeds, Tavo replaces the pending tree with the
+with their resolved layout data. When loading succeeds, Tavo.js replaces the pending tree with the
 default page. The default page and its controller still mount only with resolved page data.
 
 `pending` receives `pathname`, `params`, `layers`, and `layerData`; it does not receive page loader
 data. It is not rendered during route prefetching or normal SSR document generation. Without a
-`pending` export, Tavo keeps the previous page visible and marks the route region busy.
+`pending` export, Tavo.js keeps the previous page visible and marks the route region busy.
 
 If a loader fails, the route's `error` component receives the error and resolved route context.
-When the route has no `error` export, Tavo uses `src/pages/_error.tsx`. A `notFound()` signal
+When the route has no `error` export, Tavo.js uses `src/pages/_error.tsx`. A `notFound()` signal
 continues to bypass error views and renders `src/pages/404.tsx`.
 
 ## Layout Loaders
@@ -213,7 +213,7 @@ loaders that are safe to execute in both environments.
 
 ## Route Status APIs
 
-Tavo exposes route status state:
+Tavo.js exposes route status state:
 
 ```ts
 import {
@@ -301,7 +301,7 @@ export default function Dashboard() {
 }
 ```
 
-The returned component is still a normal Tavo component. It starts loading on first browser render, swaps the fallback after the dynamic import resolves, and exposes `preload()` for hover handlers, controllers, or SSR setup:
+The returned component is still a normal Tavo.js component. It starts loading on first browser render, swaps the fallback after the dynamic import resolves, and exposes `preload()` for hover handlers, controllers, or SSR setup:
 
 ```ts
 await HeavyPanel.preload();
@@ -311,7 +311,7 @@ Synchronous SSR renders the fallback unless the component has already been prelo
 
 ## Forms And Actions
 
-Tavo also ships action primitives:
+Tavo.js also ships action primitives:
 
 - `createAction(...)`
 - `createFormAction(...)`
@@ -346,7 +346,7 @@ export default defineRoutePage("/contact", {
 ```
 
 Actions run before page rendering for mutation methods. If an action returns `{ redirect }`,
-Tavo sends a `303` response by default. Browser-origin mutations are protected by same-origin
+Tavo.js sends a `303` response by default. Browser-origin mutations are protected by same-origin
 validation unless the action is defined with `{ validateOrigin: false }`.
 
 Client components can enhance the same endpoint:
@@ -357,7 +357,7 @@ import { createServerFormAction } from "@tavojs/core";
 const signup = createServerFormAction("/signup");
 ```
 
-For static CSR deployments, there is no Tavo server process to execute route `action`
+For static CSR deployments, there is no Tavo.js server process to execute route `action`
 exports. Use `bootTavo({ csrActions })` to enhance the same form markup and submit it
 to your API instead:
 
@@ -374,8 +374,8 @@ void bootTavo({
 ```
 
 When a form omits `action`, the current route path is used. The API should own login,
-logout, and HttpOnly session cookies; Tavo's `createSessionStorage()` is for SSR
-deployments where the Tavo server runtime handles the request.
+logout, and HttpOnly session cookies; Tavo.js's `createSessionStorage()` is for SSR
+deployments where the Tavo.js server runtime handles the request.
 
 ## Best Practices
 

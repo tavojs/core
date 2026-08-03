@@ -1,6 +1,6 @@
-# Releasing Tavo
+# Releasing Tavo.js
 
-Tavo publishes `@tavojs/core` and `@tavojs/cli` from the public
+Tavo.js publishes `@tavojs/core` and `@tavojs/cli` from the public
 [`tavojs/core`](https://github.com/tavojs/core) repository. The private development repository is
 not an npm publication source.
 
@@ -27,7 +27,7 @@ npm run export:public -- /absolute/path/to/core-public
 cd /absolute/path/to/core-public
 git init
 git add .
-git commit -m "feat: release Tavo 1.0"
+git commit -m "feat: release Tavo.js 1.0"
 git branch -M main
 git remote add origin git@github.com:tavojs/core.git
 git push -u origin main

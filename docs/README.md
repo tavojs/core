@@ -1,8 +1,8 @@
-# Tavo Framework Documentation
+# Tavo.js Framework Documentation
 
-These version-matched repository guides document Tavo Framework 1.x. Use
+These version-matched repository guides document Tavo.js Framework 1.x. Use
 [tavojs.dev/docs](https://tavojs.dev/docs) for the task-first website, tutorials, searchable API
-inventory, Tavo UI documentation, and the broader ecosystem. Use this directory when you need the
+inventory, Tavo.js UI documentation, and the broader ecosystem. Use this directory when you need the
 technical contract that ships with a specific Framework checkout.
 
 ## Choose A Documentation Path

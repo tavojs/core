@@ -3,7 +3,7 @@
 > Online CLI guide: [tavojs.dev/docs/cli](https://tavojs.dev/docs/cli)
 
 Use the `tavo` CLI as the supported interface for creating, understanding, validating, building,
-previewing, and operating a Tavo application.
+previewing, and operating a Tavo.js application.
 
 ## Install and Run
 
@@ -155,7 +155,7 @@ The generated SSR server keeps this endpoint hidden until `TAVO_MONITOR_TOKEN` i
 
 ## Agent-Oriented Inspection
 
-Tavo exposes structured project information for agents and editor tooling:
+Tavo.js exposes structured project information for agents and editor tooling:
 
 - `tavo info --json`
 - `tavo routes --json`
@@ -202,7 +202,7 @@ diagnostics, route freshness, plugin graph preflight, and optional typecheck sta
 Add `--smoke` to include
 lightweight route module parse and export checks before running a full production build.
 Use `--files <comma-separated-files>` or `--receipt <file>` to verify the changed files and their
-dependent Tavo modules without returning unrelated diagnostics.
+dependent Tavo.js modules without returning unrelated diagnostics.
 
 ## Generators
 
@@ -221,7 +221,7 @@ Page generation produces a functional module by default. `--typed-route` opts in
 
 ## Generated Route Typings
 
-After build, Tavo generates route typings in:
+After build, Tavo.js generates route typings in:
 
 ```text
 .tavo/generated/routes.d.ts
@@ -233,7 +233,7 @@ This is part of the build workflow, not something app developers maintain by han
 
 The production SSR flow emits generated server files in `.tavo/build/server` and client assets in `.tavo/build/client`.
 
-This allows Tavo to support:
+This allows Tavo.js to support:
 
 - SSR preview
 - generated Node production output

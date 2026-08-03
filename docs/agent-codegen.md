@@ -4,7 +4,7 @@
 
 > Online automation guide: [tavojs.dev/docs/cli/automation](https://tavojs.dev/docs/cli/automation)
 
-Tavo machine protocol v1 is the stable canonical CLI + JSON contract for autonomous code generation. Compact context is limited to 8192 bytes; request full or targeted detail only when needed.
+Tavo.js machine protocol v1 is the stable canonical CLI + JSON contract for autonomous code generation. Compact context is limited to 8192 bytes; request full or targeted detail only when needed.
 
 ## Agent Loop
 

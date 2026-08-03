@@ -2,7 +2,7 @@
 
 > Online reference: [tavojs.dev/docs/core/plugin-api-v1](https://tavojs.dev/docs/core/plugin-api-v1)
 
-This document is the canonical technical contract for Tavo's plugin system. It is intended for
+This document is the canonical technical contract for Tavo.js's plugin system. It is intended for
 framework maintainers, plugin authors, application teams, and coding agents that need to change or
 integrate plugins without reconstructing the design from source code.
 
@@ -28,7 +28,7 @@ Plugins are trusted executable dependencies, not sandboxes.
 - A server or build phase has the filesystem, environment, network, and process authority of the
   host process.
 - A client phase has the browser authority of the application page.
-- Capability checks prevent undeclared access through Tavo's plugin APIs. They do not stop a
+- Capability checks prevent undeclared access through Tavo.js's plugin APIs. They do not stop a
   malicious package from using JavaScript globals, Node APIs, browser APIs, or direct imports.
 - Truly untrusted extensions require a separate process, worker, or origin and an independently
   designed RPC boundary.
@@ -76,7 +76,7 @@ export const examplePlugin = definePlugin({
 ```
 
 The descriptor and application configuration are imported to discover the graph. Client, server,
-and build implementation modules remain lazy and are not loaded during graph preflight. Tavo's
+and build implementation modules remain lazy and are not loaded during graph preflight. Tavo.js's
 Vite integration also prevents server runtime loader branches and server-only modules from
 entering browser route bundles.
 
@@ -304,7 +304,7 @@ Build manifests may declare:
 - named Vite plugin implementations with `before` and `after` constraints.
 
 The build phase implements only the declared named Vite plugins. It does not receive an arbitrary
-Tavo hook for mutating the whole configuration. Application aliases and defines remain
+Tavo.js hook for mutating the whole configuration. Application aliases and defines remain
 application-owned; a collision requires an explicit override naming the expected plugin owner and
 `app` as the replacement.
 
@@ -455,7 +455,7 @@ must never be imported directly from client modules.
 
 ## Build Lifecycle
 
-Tavo compiles the same ownership graph before applying build contributions. Build aliases and
+Tavo.js compiles the same ownership graph before applying build contributions. Build aliases and
 defines are merged only after collision checks against other plugins and the application Vite
 configuration. Named Vite plugins load in declared order after their phase implementation keys are
 validated.

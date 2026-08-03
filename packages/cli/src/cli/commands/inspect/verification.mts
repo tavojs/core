@@ -276,7 +276,7 @@ export async function verifyProject(flags?: CliFlags): Promise<void> {
       }),
     );
   } else {
-    console.log(ok ? "Tavo verify passed." : "Tavo verify failed.");
+    console.log(ok ? "Tavo.js verify passed." : "Tavo.js verify failed.");
     console.log("Use `tavo verify --json` for machine-readable output.");
   }
   if (!ok) process.exitCode = 1;

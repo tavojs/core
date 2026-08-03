@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tavojs.dev/schemas/generator-spec.schema.json",
-  "title": "Tavo Generator Spec",
+  "title": "Tavo.js Generator Spec",
   "description": "Schema for tavo generate --from-json and --from-stdin.",
   "oneOf": [
     { "$ref": "#/$defs/spec" },

@@ -3,7 +3,7 @@
 > Online guide:
 > [tavojs.dev/docs/core/scheduling-and-instrumentation](https://tavojs.dev/docs/core/scheduling-and-instrumentation)
 
-Tavo provides framework-neutral structured instrumentation. It has no required telemetry vendor and does not collect data unless an application supplies an observer.
+Tavo.js provides framework-neutral structured instrumentation. It has no required telemetry vendor and does not collect data unless an application supplies an observer.
 
 ## Configure an Observer
 
@@ -59,5 +59,5 @@ const instrumentation = createOpenTelemetryInstrumentation(
 The adapter pairs start/terminal lifecycle events into spans and records route, layer, timing,
 status, and cache metadata as attributes. Error objects are not exported by default because they
 may contain application data. Set `{ recordErrors: true }` only after configuring redaction.
-Sampling, processors, and exporters remain in the application deployment layer, so Tavo adds no
+Sampling, processors, and exporters remain in the application deployment layer, so Tavo.js adds no
 OpenTelemetry runtime dependency.

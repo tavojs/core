@@ -3,11 +3,11 @@
 > Online guide:
 > [tavojs.dev/docs/core/seo-assets-and-styling](https://tavojs.dev/docs/core/seo-assets-and-styling)
 
-This guide explains how styling works in Tavo applications.
+This guide explains how styling works in Tavo.js applications.
 
 ## Framework Position
 
-Styling in Tavo is bundler-owned and app-owned.
+Styling in Tavo.js is bundler-owned and app-owned.
 
 That means:
 
@@ -40,7 +40,7 @@ export function Card() {
 
 ## SCSS And SCSS Modules
 
-If the app has Sass support installed, Tavo works with:
+If the app has Sass support installed, Tavo.js works with:
 
 - `.scss`
 - `.module.scss`
@@ -55,7 +55,7 @@ The framework ships ambient typing support for style module imports, while the b
 
 ## Inline Style Objects
 
-Tavo also supports style objects in TSX:
+Tavo.js also supports style objects in TSX:
 
 ```tsx
 <div
@@ -73,11 +73,11 @@ These styles are also serialized for SSR and compared during hydration.
 
 When using SSR, CSS files should be part of the app’s build output so styles are available with the document shell.
 
-Tavo’s config and dev server helpers can discover common CSS entry files automatically, and `cssEntries` can be used when your app uses a different structure.
+Tavo.js’s config and dev server helpers can discover common CSS entry files automatically, and `cssEntries` can be used when your app uses a different structure.
 
 ## Styling Boundaries
 
-Tavo styling keeps these responsibilities with the app and bundler:
+Tavo.js styling keeps these responsibilities with the app and bundler:
 
 - CSS-in-JS runtime ownership
 - framework-generated CSS files

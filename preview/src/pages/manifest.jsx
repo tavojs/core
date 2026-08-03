@@ -7,7 +7,7 @@ import {
 export const head = (
   <>
     <title>tavo preview - manifest</title>
-    <meta name="description" content="Tavo route manifest and typed routing preview" />
+    <meta name="description" content="Tavo.js route manifest and typed routing preview" />
   </>
 );
 

@@ -3,7 +3,7 @@ import { FeatureLab } from "../components/FeatureLab/index.tsx";
 export const head = (
   <>
     <title>tavo preview - feature lab</title>
-    <meta name="description" content="Tavo framework feature lab" />
+    <meta name="description" content="Tavo.js framework feature lab" />
   </>
 );
 

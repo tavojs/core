@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/security](https://tavojs.dev/docs/core/security)
 
-Tavo ships with secure defaults for SSR rendering, routing, image optimization, and CLI-generated files. This page explains the behavior developers should know before deploying an app.
+Tavo.js ships with secure defaults for SSR rendering, routing, image optimization, and CLI-generated files. This page explains the behavior developers should know before deploying an app.
 
 ## Plugin Trust Boundary
 
@@ -165,7 +165,7 @@ to storage instead of buffering through route actions.
 
 Treat authentication as request-scoped during SSR. Do not write the current user, access token, session data, tenant, cart, or permissions into a global store, a global service, or a module-level variable.
 
-Tavo includes an opaque signed session-cookie helper for SSR apps:
+Tavo.js includes an opaque signed session-cookie helper for SSR apps:
 
 ```ts
 import {
@@ -205,7 +205,7 @@ is bounded to 10,000 entries by default and accepts `maxEntries`, but it remains
 and local demos rather than production persistence.
 
 Keep secrets, sessions, database clients, and private API clients behind a server module boundary.
-Tavo blocks static imports from `src/server/**` in the client bundle and recognizes the canonical
+Tavo.js blocks static imports from `src/server/**` in the client bundle and recognizes the canonical
 `@tavojs/core/server-only` marker:
 
 ```ts
@@ -298,7 +298,7 @@ Avoid this during SSR:
 authStore.setState({ user: await getUserFromRequest(request) });
 ```
 
-Tavo warns when global stores or services are written/registered during SSR because those registries are process-wide on the server. Shared configuration and stateless services are fine; request-specific mutable state is not.
+Tavo.js warns when global stores or services are written/registered during SSR because those registries are process-wide on the server. Shared configuration and stateless services are fine; request-specific mutable state is not.
 
 ## Image Optimizer
 
@@ -321,7 +321,7 @@ recorded by proxies, shells, browsers, and monitoring systems.
 
 ## Content Security Policy
 
-Tavo does not set a default Content Security Policy because apps differ in script, style, image,
+Tavo.js does not set a default Content Security Policy because apps differ in script, style, image,
 font, analytics, and deployment needs. Add CSP at your reverse proxy or hosting edge. A strict starting
 point for an app with self-hosted assets is:
 

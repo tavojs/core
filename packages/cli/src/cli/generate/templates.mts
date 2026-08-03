@@ -12,7 +12,7 @@ import {
 export function createAgentGuideSource(packageManager: string): string {
   const run = cliExecHint(packageManager);
   return [
-    "# Tavo Agent Guide",
+    "# Tavo.js Agent Guide",
     "",
     "Use this file as the local contract for generated and agent-edited app code.",
     "",
@@ -32,7 +32,7 @@ export function createAgentGuideSource(packageManager: string): string {
     "",
     "## App Conventions",
     "",
-    "- Tavo uses TSX, but it is not React. Do not add React, React hooks, React Context, or React lifecycle patterns.",
+    "- Tavo.js uses TSX, but it is not React. Do not add React, React hooks, React Context, or React lifecycle patterns.",
     "- Pages live in `src/pages` and use file-based routing.",
     "- Use `@tavojs/core` for application APIs and `@tavojs/core/router` for route and navigation APIs.",
     "- Use only `server`, `config`, `plugin`, or experimental `dev` subpaths for those explicit boundaries.",
@@ -55,7 +55,7 @@ export function createAgentGuideSource(packageManager: string): string {
     "",
     "## Documentation",
     "",
-    "- Prefer the local Tavo MCP server when it is configured: search documentation first, " +
+    "- Prefer the local Tavo.js MCP server when it is configured: search documentation first, " +
       "then read `tavo://status` to check snapshot compatibility.",
     "- Agent documentation index: `https://tavojs.dev/llms.txt`.",
     "- Full offline documentation: `https://tavojs.dev/llms-full.txt`.",

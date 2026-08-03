@@ -1,5 +1,5 @@
 name: Bug report
-description: Report reproducible incorrect behavior in Tavo.
+description: Report reproducible incorrect behavior in Tavo.js.
 title: "[Bug]: "
 labels:
   - bug
@@ -10,7 +10,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Tavo version
+      label: Tavo.js version
       placeholder: "1.0.0"
     validations:
       required: true

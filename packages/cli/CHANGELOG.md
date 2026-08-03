@@ -1,10 +1,21 @@
 # @tavojs/cli
 
+## 1.0.1
+
+### Patch Changes
+
+- 2958197: Correct package author and copyright attribution, and add the project trademark, DCO
+  contribution, and private security-reporting policies.
+- Standardize public product naming as Tavo.js across documentation, generated application copy,
+  schemas, diagnostics, and package metadata.
+- Updated dependencies [2958197]
+  - @tavojs/core@1.0.2
+
 ## 1.0.0
 
 ### Major Changes
 
-- Release the stable Tavo 1.0 framework and CLI contracts. This release establishes functional page
+- Release the stable Tavo.js 1.0 framework and CLI contracts. This release establishes functional page
   modules, static prerendering, Node server output, Plugin API v1, one project configuration file,
   stable package boundaries, and launch-grade documentation and verification. The public import map
   is consolidated around the package root plus router, server, config, plugin, and development
@@ -12,7 +23,7 @@
 
 ### Minor Changes
 
-- Introduce Tavo machine protocol v1 for AI code generators. Agent commands now use compact versioned
+- Introduce Tavo.js machine protocol v1 for AI code generators. Agent commands now use compact versioned
   JSON envelopes, task-scoped context, targeted entity inspection, cached analysis, transactional
   hash-guarded change plans, change receipts, and dependency-aware targeted verification.
 
@@ -20,7 +31,7 @@
   corpus, correctness-per-token scoring, deterministic context performance gates, and a
   provider-neutral live-model adapter contract.
 
-- Make Tavo faster, safer, and easier to operate in production. This release adds end-to-end async
+- Make Tavo.js faster, safer, and easier to operate in production. This release adds end-to-end async
   cancellation, tagged cache invalidation and request deduplication, stable diagnostics and artifact
   schemas, stricter client/server boundaries, structured OpenTelemetry-compatible instrumentation,
   validated actions, prioritized scheduling, runtime devtools, plugin API compatibility checks, and
@@ -41,7 +52,7 @@
   defaults, and `{ use, overrides }` preserves advanced replacement. Plugin inspection reports the
   effective permission and exposure audit with human-readable reasons.
 
-  Add plugin graph inspection and automatic plugin preflight to the Tavo CLI.
+  Add plugin graph inspection and automatic plugin preflight to the Tavo.js CLI.
 
 ### Patch Changes
 

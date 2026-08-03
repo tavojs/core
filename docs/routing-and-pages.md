@@ -3,11 +3,11 @@
 > Online guide:
 > [tavojs.dev/docs/core/pages-and-layouts](https://tavojs.dev/docs/core/pages-and-layouts)
 
-This guide explains Tavo’s file-based routing system and the standalone router package.
+This guide explains Tavo.js’s file-based routing system and the standalone router package.
 
 ## File-based Pages
 
-If `src/pages` exists, Tavo can create routes automatically.
+If `src/pages` exists, Tavo.js can create routes automatically.
 
 Examples:
 
@@ -155,7 +155,7 @@ The named module exports include `load`, `pending`, `error`, `action`, `middlewa
 `pending` and `error` are normal component definitions, including components created with
 `createTavo(...)`. During browser navigation, `pending` renders after middleware and layout
 loaders finish and while the page loader is still running. A route-level `error` handles loader
-failures for that route before Tavo falls back to the global `src/pages/_error.tsx` page.
+failures for that route before Tavo.js falls back to the global `src/pages/_error.tsx` page.
 
 `static` cannot be declared as a module binding, so it cannot be the name of a `const` export.
 Use the named `prerender` export. In the optional helper below, `{ static: true }` is valid because
@@ -238,7 +238,7 @@ This helps route-aware page code stay typed without manual route maps.
 
 ## Standalone Router
 
-Tavo also ships a small standalone router package:
+Tavo.js also ships a small standalone router package:
 
 ```tsx
 import { createRouter, Link, RouterProvider } from "@tavojs/core/router";

@@ -3,13 +3,13 @@
 > Online guide:
 > [tavojs.dev/docs/core/static-output-and-cache](https://tavojs.dev/docs/core/static-output-and-cache)
 
-Use this guide when you want to deploy a Tavo app to static hosting without a Node.js runtime.
+Use this guide when you want to deploy a Tavo.js app to static hosting without a Node.js runtime.
 
 Static deployment means:
 
 - Node.js is used only at build time, either on your machine or in CI.
 - Production serves files from `.tavo/build/client`.
-- There is no running Tavo server after deployment.
+- There is no running Tavo.js server after deployment.
 
 This is a good fit for client-rendered apps, marketing pages, documentation, dashboards that call
 external APIs from the browser, and routes that can be prerendered at build time.
@@ -30,7 +30,7 @@ This writes static client output to:
 
 Deploy that directory to your static host.
 
-The build also creates `.tavo/build/server` because Tavo uses the server renderer during the build
+The build also creates `.tavo/build/server` because Tavo.js uses the server renderer during the build
 to inspect and prerender routes. Static deployments do not upload or run that server directory.
 
 ## Prerender Static Routes
@@ -61,7 +61,7 @@ export default function BlogPost({ params }: PageProps<unknown, { id: string }>)
 }
 ```
 
-After `tavo build`, Tavo writes prerendered HTML files into `.tavo/build/client`, such as:
+After `tavo build`, Tavo.js writes prerendered HTML files into `.tavo/build/client`, such as:
 
 ```text
 .tavo/build/client/index.html
@@ -69,7 +69,7 @@ After `tavo build`, Tavo writes prerendered HTML files into `.tavo/build/client`
 .tavo/build/client/blog/hello/index.html
 ```
 
-Routes with `revalidate` are not static-file routes. They require a Tavo SSR runtime so the server
+Routes with `revalidate` are not static-file routes. They require a Tavo.js SSR runtime so the server
 can refresh cached HTML after the interval.
 
 ## Client-Rendered Routes
@@ -85,7 +85,7 @@ export default function DashboardPage() {
 ```
 
 Static hosts should fall back unknown application routes to `/index.html` so direct visits still
-load the Tavo client router.
+load the Tavo.js client router.
 
 Use this fallback only for app routes. Static assets should still return 404 when missing.
 
@@ -118,7 +118,7 @@ server {
 
 ## API And Forms
 
-Static hosting cannot execute Tavo route `action` exports, server loaders, middleware that
+Static hosting cannot execute Tavo.js route `action` exports, server loaders, middleware that
 depends on server requests, or `createSessionStorage()` sessions.
 
 For forms and mutations, configure CSR actions so non-GET forms submit to an external API:

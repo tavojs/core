@@ -12,6 +12,8 @@ Use GitHub's private vulnerability reporting for this repository:
 
 https://github.com/tavojs/core/security/advisories/new
 
+If private vulnerability reporting is unavailable, email support@tavojs.dev as a private fallback.
+
 Include the affected package and version, a minimal reproduction, the expected impact, and any
 suggested mitigation. Maintainers will acknowledge a complete report as soon as practical and will
 coordinate disclosure after a fix is available.

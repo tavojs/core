@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tavojs.dev/schemas/evaluation-result-v1.schema.json",
-  "title": "Tavo Agent Evaluation Result v1",
+  "title": "Tavo.js Agent Evaluation Result v1",
   "type": "object",
   "required": ["schemaVersion", "model", "taskId", "inputTokens", "outputTokens", "toolCalls", "firstPass", "repaired", "durationMs"],
   "properties": {

@@ -1,6 +1,6 @@
 # @tavojs/core
 
-The runtime package for Tavo applications. It provides the TSX runtime, DOM rendering, file-based pages, MVC components, stores, routing, SSR, forms, sessions, assets, localization, plugins, and testing helpers.
+The runtime package for Tavo.js applications. It provides the TSX runtime, DOM rendering, file-based pages, MVC components, stores, routing, SSR, forms, sessions, assets, localization, plugins, and testing helpers.
 
 ## Install
 
@@ -27,7 +27,7 @@ void bootTavo();
 ```tsx
 // src/pages/index.tsx
 export default function HomePage() {
-  return <main>Hello from Tavo</main>;
+  return <main>Hello from Tavo.js</main>;
 }
 ```
 
@@ -75,7 +75,7 @@ the [application guide](https://tavojs.dev/docs/getting-started), then use the
 - [Plugin authoring](https://github.com/tavojs/core/blob/main/docs/plugins.md)
 - [Plugin architecture](https://github.com/tavojs/core/blob/main/docs/plugins-architecture.md)
 
-Tavo requires Node.js `^20.19.0 || >=22.12.0` for server and build workflows.
+Tavo.js requires Node.js `^20.19.0 || >=22.12.0` for server and build workflows.
 
 ## License
 

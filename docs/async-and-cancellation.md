@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/async-ownership](https://tavojs.dev/docs/core/async-ownership)
 
-Every long-running operation should have an owner. In Tavo, route work belongs to a navigation or
+Every long-running operation should have an owner. In Tavo.js, route work belongs to a navigation or
 server request, resources belong to their latest load, and deferred work belongs to its explicit
 signal or rendering lifecycle. This prevents obsolete work from publishing state after its owner
 has moved on.
@@ -22,7 +22,7 @@ export async function load({ signal }: PageLoadContext) {
 }
 ```
 
-Abort errors are control flow, not route failures. Tavo does not commit loader data or error UI
+Abort errors are control flow, not route failures. Tavo.js does not commit loader data or error UI
 from superseded work.
 
 ## Resources
