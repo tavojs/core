@@ -6,7 +6,7 @@ type NotFoundSignal = Error & {
 
 /** Stops route resolution and renders the application's reserved 404 page. */
 export function notFound(): never {
-  const signal = new Error("Tavo route not found") as NotFoundSignal;
+  const signal = new Error("Tavo.js route not found") as NotFoundSignal;
   signal.name = "NotFoundError";
   signal[NOT_FOUND_SIGNAL] = true;
   throw signal;

@@ -1,4 +1,4 @@
-/** Detects a hydratable server-rendered document from Tavo's serialized state. */
+/** Detects a hydratable server-rendered document from Tavo.js's serialized state. */
 export function isSsrDocument(root?: Element | null): boolean {
   if (typeof document === "undefined") {
     return false;

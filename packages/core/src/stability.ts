@@ -8,7 +8,7 @@ export type ApiStabilityEntry = {
 
 /**
  * Machine-readable stability contract for public package entry points.
- * Stable entry points follow semantic versioning from Tavo 1.0 onward.
+ * Stable entry points follow semantic versioning from Tavo.js 1.0 onward.
  */
 export const TAVO_API_STABILITY = Object.freeze({
   "@tavojs/core": { level: "stable", since: "1.0", note: "Common application runtime APIs." },

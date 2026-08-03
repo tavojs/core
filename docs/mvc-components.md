@@ -2,18 +2,18 @@
 
 > Online guide: [tavojs.dev/docs/core/mvc](https://tavojs.dev/docs/core/mvc)
 
-This guide explains the main Tavo programming model: `createTavo(...)`.
+This guide explains the main Tavo.js programming model: `createTavo(...)`.
 
 ## Core Idea
 
-Tavo components are built from three parts:
+Tavo.js components are built from three parts:
 
 - `model`: local reactive state
 - `controller`: business logic and orchestration
 - `view`: TSX rendering
 
 This keeps UI logic explicit and makes state changes easy to trace.
-There are no public component hooks in Tavo; component behavior belongs in controllers, stores, refs, directives, and explicit lifecycle methods.
+There are no public component hooks in Tavo.js; component behavior belongs in controllers, stores, refs, directives, and explicit lifecycle methods.
 
 ## Basic Example
 
@@ -226,7 +226,7 @@ For lightweight enter/leave behavior, use `transition`:
 
 ## Focus And Observers
 
-Controllers can define lifecycle methods directly. Tavo calls them automatically and cleans up returned functions on unmount:
+Controllers can define lifecycle methods directly. Tavo.js calls them automatically and cleans up returned functions on unmount:
 
 ```tsx
 import { createRef, createTavo, focusFirst, TavoController } from "@tavojs/core";

@@ -2,7 +2,7 @@
 
 > Online automation guide: [tavojs.dev/docs/cli/automation](https://tavojs.dev/docs/cli/automation)
 
-Tavo treats correctness per token as a release metric for its machine protocol.
+Tavo.js treats correctness per token as a release metric for its machine protocol.
 
 ## Certified Corpus
 
@@ -47,7 +47,7 @@ export async function runTask(task) {
 
 Run an adapter with `npm --workspace @tavojs/cli run eval:live -- ./adapter.mjs report.json`.
 Use at least two model/tool ecosystems nightly and before a release. Credentials and provider SDKs
-belong to the adapter, not Tavo.
+belong to the adapter, not Tavo.js.
 
 The included GitHub workflow reads repository-relative adapter modules from
 `TAVO_AGENT_ADAPTER_A` and `TAVO_AGENT_ADAPTER_B`, with credentials supplied through the matching

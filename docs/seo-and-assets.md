@@ -3,7 +3,7 @@
 > Online guide:
 > [tavojs.dev/docs/core/seo-assets-and-styling](https://tavojs.dev/docs/core/seo-assets-and-styling)
 
-This guide documents Tavo’s framework-owned head, font, image, SVG, script, and SEO primitives.
+This guide documents Tavo.js’s framework-owned head, font, image, SVG, script, and SEO primitives.
 
 ## `Head`
 
@@ -17,7 +17,7 @@ If you must insert a raw HTML string, use `unsafeHeadHtml` so the risk is visibl
 <Head unsafeHeadHtml='<meta name="theme-color" content="#101820">' />
 ```
 
-Prefer JSX children whenever possible because raw strings are not sanitized by Tavo.
+Prefer JSX children whenever possible because raw strings are not sanitized by Tavo.js.
 
 ## Page `head`
 
@@ -50,7 +50,7 @@ export function head(context: PageLoadContext) {
 import { Seo } from "@tavojs/core";
 
 <Seo
-  title="Tavo"
+  title="Tavo.js"
   description="A lightweight TSX framework."
   canonical="https://tavojs.dev/"
   openGraph={{ type: "website", image: "https://tavojs.dev/og.png" }}
@@ -71,7 +71,7 @@ Use it for:
 
 ## `Image`
 
-`Image` is Tavo’s framework-managed image component.
+`Image` is Tavo.js’s framework-managed image component.
 
 Example:
 
@@ -90,7 +90,7 @@ import { Image } from "@tavojs/core";
 
 Behavior:
 
-- in SSR apps, it can use Tavo’s server optimization endpoint
+- in SSR apps, it can use Tavo.js’s server optimization endpoint
 - in CSR-only apps, it falls back to normal asset URLs
 
 This keeps usage consistent between app modes.
@@ -120,7 +120,7 @@ export default defineConfig({
 });
 ```
 
-Tavo blocks private-network hosts by default and requires HTTPS unless `allowInsecureRemote` is explicitly enabled for local development.
+Tavo.js blocks private-network hosts by default and requires HTTPS unless `allowInsecureRemote` is explicitly enabled for local development.
 
 ### Remote Image 500s
 
@@ -155,11 +155,11 @@ export default defineConfig({
 
 Keep the allowlist narrow. Prefer exact hosts and optional path prefixes over broad wildcards.
 
-In dev SSR, restart the Tavo dev server after changing `tavo.config.ts`; image optimizer options are read when the server starts.
+In dev SSR, restart the Tavo.js dev server after changing `tavo.config.ts`; image optimizer options are read when the server starts.
 
 ## SVG Components
 
-Tavo’s Vite config helper converts SVG files to JSX components when the import uses the `?component` query:
+Tavo.js’s Vite config helper converts SVG files to JSX components when the import uses the `?component` query:
 
 ```tsx
 import Logo from "./logo.svg?component";
@@ -169,7 +169,7 @@ export default function Page() {
     <Logo
       className="brand-mark"
       style={{ color: "tomato" }}
-      aria-label="Tavo"
+      aria-label="Tavo.js"
       width="48"
       height="48"
     />
@@ -215,7 +215,7 @@ import { Script } from "@tavojs/core";
   json={{
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Tavo",
+    name: "Tavo.js",
   }}
 />;
 ```

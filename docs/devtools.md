@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/runtime-devtools](https://tavojs.dev/docs/core/runtime-devtools)
 
-Tavo exposes privacy-safe snapshots for development tools, diagnostic panels, and editor integrations.
+Tavo.js exposes privacy-safe snapshots for development tools, diagnostic panels, and editor integrations.
 
 ```ts
 import {

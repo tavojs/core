@@ -41,7 +41,7 @@ export const I18nDemo = createTavo<Record<string, never>, Record<string, never>,
           <article className="tavo-card">
             <h4>{text.cards.dynamic.title}</h4>
             <p>{text.cards.dynamic.body}</p>
-            <code>{i18n.t("page.greeting", { name: "Tavo" })}</code>
+            <code>{i18n.t("page.greeting", { name: "Tavo.js" })}</code>
           </article>
           <article className="tavo-card">
             <h4>{text.cards.routing.title}</h4>

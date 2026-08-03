@@ -3,11 +3,11 @@
 > Online guide:
 > [tavojs.dev/docs/core/ssr-and-hydration](https://tavojs.dev/docs/core/ssr-and-hydration)
 
-This guide explains how Tavo renders on the server and attaches the client runtime afterward.
+This guide explains how Tavo.js renders on the server and attaches the client runtime afterward.
 
 ## SSR Model
 
-Tavo supports server-side rendering for file-based pages and standalone runtime trees.
+Tavo.js supports server-side rendering for file-based pages and standalone runtime trees.
 
 Main SSR capabilities:
 
@@ -40,11 +40,11 @@ The framework decides whether to:
 - mount client-side
 - hydrate server-rendered HTML
 
-That is one of the main design goals of Tavo’s pages runtime.
+That is one of the main design goals of Tavo.js’s pages runtime.
 
 ## Hydration
 
-On the client, Tavo reuses existing SSR DOM and attaches behavior.
+On the client, Tavo.js reuses existing SSR DOM and attaches behavior.
 
 Hydration attempts to preserve:
 
@@ -53,11 +53,11 @@ Hydration attempts to preserve:
 - component boundaries
 - route markup
 
-If the server DOM and client tree disagree, Tavo can report hydration mismatches in dev diagnostics.
+If the server DOM and client tree disagree, Tavo.js can report hydration mismatches in dev diagnostics.
 
 ## Serialized Initial State
 
-When SSR is used for pages, Tavo serializes resolved route data into the document.
+When SSR is used for pages, Tavo.js serializes resolved route data into the document.
 
 That allows the client to:
 
@@ -144,7 +144,7 @@ export default defineRoutePage("/dashboard", {
 Data-dependent `head(context)` functions run when the browser resolves the CSR route, so they do
 not affect the initial HTML. Prefer static `head` objects or JSX for CSR routes when the first
 response needs title or metadata. `prerender`, `revalidate`, `vary`, and
-`generateStaticParams()` are SSR/static rendering features; Tavo ignores them on CSR routes and
+`generateStaticParams()` are SSR/static rendering features; Tavo.js ignores them on CSR routes and
 reports a route diagnostic.
 
 ## Static SSR And Revalidation
@@ -247,7 +247,7 @@ Multiple headers are supported:
 export const vary = ["x-tenant", "x-region"];
 ```
 
-When `vary` is used, Tavo includes those header values in its static SSR cache key and emits a matching `Vary` response header when the request contains them.
+When `vary` is used, Tavo.js includes those header values in its static SSR cache key and emits a matching `Vary` response header when the request contains them.
 
 For production environments with multiple processes or regions, provide a static cache adapter:
 
@@ -283,7 +283,7 @@ In CSR-only apps it gracefully falls back to normal asset URLs.
 
 ## Vite SSR Dev
 
-Tavo also supports a Vite-based SSR development server for local development:
+Tavo.js also supports a Vite-based SSR development server for local development:
 
 - route discovery
 - SSR rendering
@@ -294,7 +294,7 @@ This keeps the dev server setup simple from day one.
 
 ## Best Practices
 
-- write page code once and let Tavo choose CSR vs SSR behavior
+- write page code once and let Tavo.js choose CSR vs SSR behavior
 - use SSR for SEO-sensitive or first-load-sensitive routes
 - use revalidation for pages that are mostly static but need periodic refresh
 - keep request-specific data out of global stores, global services, and module-level variables

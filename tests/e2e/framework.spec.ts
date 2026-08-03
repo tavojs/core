@@ -22,7 +22,7 @@ test("ssr preview renders routes, metadata, and optimized images", async ({ page
   await expect(page.getByRole("heading", { name: "SEO Asset Components" })).toBeVisible();
 
   const image = page.getByRole("img", {
-    name: "Stylized Tavo mountain landscape illustration"
+    name: "Stylized Tavo.js mountain landscape illustration"
   });
   await expect(image).toBeVisible();
   await expect(image).toHaveAttribute("src", /\/_tavo\/image\?/);

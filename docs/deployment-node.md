@@ -18,7 +18,7 @@ The server defaults to `HOST=127.0.0.1` and `PORT=4174`. Override them with envi
 HOST=0.0.0.0 PORT=3000 node .tavo/build/server/start.mjs
 ```
 
-Run one generated server entry per process. Tavo initializes the application plugin runtime once
+Run one generated server entry per process. Tavo.js initializes the application plugin runtime once
 and reuses its process-local caches across requests.
 
 ## Project Configuration

@@ -241,7 +241,7 @@ export async function printAgentContext(flags?: CliFlags): Promise<void> {
     printJson(payload);
     return;
   }
-  console.log("Tavo agent context");
+  console.log("Tavo.js agent context");
   console.log("");
   console.log(`Project:     ${payload.data.project.name}`);
   console.log(`Pages dir:   ${payload.data.project.pagesDir}`);

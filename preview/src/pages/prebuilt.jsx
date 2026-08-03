@@ -3,7 +3,7 @@ export const prerender = true;
 export const head = (
   <>
     <title>tavo preview - prebuilt static</title>
-    <meta name="description" content="Build-time prerendered static page in Tavo." />
+    <meta name="description" content="Build-time prerendered static page in Tavo.js." />
   </>
 );
 

@@ -2,7 +2,7 @@
 
 > Online guide: [tavojs.dev/docs/core/configuration](https://tavojs.dev/docs/core/configuration)
 
-Tavo has two configuration layers: Vite options in `vite.config.ts`, and framework options in the
+Tavo.js has two configuration layers: Vite options in `vite.config.ts`, and framework options in the
 single root `tavo.config.ts`. The `ssr` name refers to a nested object in `tavo.config.ts`; it is not
 a second file.
 
@@ -23,7 +23,7 @@ export default defineTavoViteConfig({
 
 ## Framework Configuration
 
-Tavo loads the default export from `tavo.config.ts` in the project root.
+Tavo.js loads the default export from `tavo.config.ts` in the project root.
 
 ```ts
 // tavo.config.ts
@@ -207,7 +207,7 @@ configureDevDiagnostics({
 });
 ```
 
-Set `strictHydration: true` in CI or browser tests to throw a coded `TAVO_HYDRATION_001` error on the first mismatch. Normal development mode reports whether Tavo recovered text, a subtree, or extra-node cleanup without failing the application.
+Set `strictHydration: true` in CI or browser tests to throw a coded `TAVO_HYDRATION_001` error on the first mismatch. Normal development mode reports whether Tavo.js recovered text, a subtree, or extra-node cleanup without failing the application.
 
 ## Next Reading
 

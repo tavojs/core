@@ -52,10 +52,10 @@ function evaluateGeneratedComponent(code: string): Component<Record<string, unkn
   return new Function("h", body)(h) as Component<Record<string, unknown>>;
 }
 
-test("svg component transformer converts nested SVG into a Tavo component", () => {
+test("svg component transformer converts nested SVG into a Tavo.js component", () => {
   const code = transformSvgToTavoComponent(`
     <svg viewBox="0 0 24 24" class="source" onclick="bad()">
-      <title>Tavo &amp; SVG</title>
+      <title>Tavo.js &amp; SVG</title>
       <g fill="currentColor">
         <path d="M4 4h16v16H4z" stroke-width="2" />
       </g>
@@ -67,7 +67,7 @@ test("svg component transformer converts nested SVG into a Tavo component", () =
     h(Icon, {
       className: "consumer",
       style: { color: "tomato" },
-      "aria-label": "Tavo"
+      "aria-label": "Tavo.js"
     })
   );
 
@@ -75,10 +75,10 @@ test("svg component transformer converts nested SVG into a Tavo component", () =
   assert.match(html, /viewBox="0 0 24 24"/);
   assert.match(html, /class="consumer"/);
   assert.match(html, /style="color:tomato"/);
-  assert.match(html, /aria-label="Tavo"/);
+  assert.match(html, /aria-label="Tavo\.js"/);
   assert.match(html, /fill="currentColor"/);
   assert.match(html, /stroke-width="2"/);
-  assert.match(html, /Tavo &amp; SVG/);
+  assert.match(html, /Tavo\.js &amp; SVG/);
   assert.doesNotMatch(html, /onclick/);
   assert.doesNotMatch(html, /script/);
 });

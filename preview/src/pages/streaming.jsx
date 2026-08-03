@@ -19,7 +19,7 @@ function createSlowStreamingMessage() {
 export const head = (
   <>
     <title>tavo preview - streaming</title>
-    <meta name="description" content="Progressive SSR streaming with Deferred boundaries in Tavo." />
+    <meta name="description" content="Progressive SSR streaming with Deferred boundaries in Tavo.js." />
   </>
 );
 

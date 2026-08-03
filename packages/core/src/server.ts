@@ -165,7 +165,7 @@ export function defineServerOnly<T extends (...args: any[]) => unknown>(fn: T): 
   return ((...args: Parameters<T>): ReturnType<T> => {
     if (!isServerRuntime()) {
       throw new Error(
-        "Tavo server-only function called in the browser. Move this call behind a server-only action, loader, or middleware."
+        "Tavo.js server-only function called in the browser. Move this call behind a server-only action, loader, or middleware."
       );
     }
     return fn(...args) as ReturnType<T>;

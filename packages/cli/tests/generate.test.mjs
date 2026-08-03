@@ -83,7 +83,7 @@ function contrastRatio(foreground, background) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-test("createApp scaffolds a usable Tavo project shape without overwriting existing files", async () => {
+test("createApp scaffolds a usable Tavo.js project shape without overwriting existing files", async () => {
   const workspace = await createTempProject();
   await withCwd(workspace, async () => {
     await createApp("demo", { packageManager: "pnpm" });
@@ -111,7 +111,7 @@ test("createApp scaffolds a usable Tavo project shape without overwriting existi
   assert.doesNotMatch(home, /@tavojs\/core\/(?:client|framework|seo)/);
   assert.match(home, /createTavo/);
   assert.match(home, /export default HomePage/);
-  assert.match(home, /<Seo title="Tavo counter" description=\{pageDescription\}/);
+  assert.match(home, /<Seo title="Tavo\.js counter" description=\{pageDescription\}/);
   assert.match(home, /State that moves/);
   assert.match(home, /aria-label="Interactive counter"/);
   assert.match(home, /counter-icon--minus/);
@@ -125,7 +125,7 @@ test("createApp scaffolds a usable Tavo project shape without overwriting existi
   assert.doesNotMatch(main, /auto-pages|discoverPagesModules|bootstrapAutoPages/);
 
   const indexHtml = await fs.readFile(path.join(root, "index.html"), "utf8");
-  assert.match(indexHtml, /<title>Tavo counter<\/title>/);
+  assert.match(indexHtml, /<title>Tavo\.js counter<\/title>/);
   assert.doesNotMatch(indexHtml, /<meta name="description"/);
   assert.match(indexHtml, /href="\/favicon-32x32\.png"/);
   assert.match(indexHtml, /href="\/site\.webmanifest"/);

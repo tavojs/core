@@ -15,7 +15,7 @@ export const head = (
     <title>tavo preview - static SSR</title>
     <meta
       name="description"
-      content="Static SSR page with incremental revalidation in Tavo."
+      content="Static SSR page with incremental revalidation in Tavo.js."
     />
   </>
 );

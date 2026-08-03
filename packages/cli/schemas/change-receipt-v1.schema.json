@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tavojs.dev/schemas/change-receipt-v1.schema.json",
-  "title": "Tavo Change Receipt v1",
+  "title": "Tavo.js Change Receipt v1",
   "type": "object",
   "required": ["schemaVersion", "dryRun", "transaction", "fileHashes", "operations", "verificationCommand"],
   "properties": {

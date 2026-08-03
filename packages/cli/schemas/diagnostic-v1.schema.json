@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tavojs.dev/schemas/diagnostic-v1.schema.json",
-  "title": "Tavo Machine Diagnostic v1",
+  "title": "Tavo.js Machine Diagnostic v1",
   "type": "object",
   "required": ["code", "level", "message"],
   "properties": {

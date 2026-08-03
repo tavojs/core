@@ -3,7 +3,7 @@
 > Online guide:
 > [tavojs.dev/docs/core/scheduling-and-instrumentation](https://tavojs.dev/docs/core/scheduling-and-instrumentation)
 
-Tavo batches component updates and supports explicit priorities for expensive or non-urgent state changes.
+Tavo.js batches component updates and supports explicit priorities for expensive or non-urgent state changes.
 
 ## Background Transitions
 

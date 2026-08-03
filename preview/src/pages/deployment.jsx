@@ -1,7 +1,7 @@
 export const head = (
   <>
     <title>tavo preview - deployment</title>
-    <meta name="description" content="Tavo deployment and config preview" />
+    <meta name="description" content="Tavo.js deployment and config preview" />
   </>
 );
 
@@ -11,7 +11,7 @@ export default function DeploymentPage() {
       <section className="tavo-panel">
         <h3>Production Output + Config</h3>
         <p className="tavo-muted">
-          Tavo builds static client files and one generated Node server.
+          Tavo.js builds static client files and one generated Node server.
         </p>
       </section>
 
@@ -37,7 +37,7 @@ export default defineConfig({
   diagnostics: { devOverlay: true },
   ssr: {
     document: {
-      title: "Tavo app"
+      title: "Tavo.js app"
     }
   }
 });`}</pre>

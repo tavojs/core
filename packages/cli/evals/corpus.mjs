@@ -7,7 +7,7 @@ const taskTemplates = [
   ["add-action", "Add a validated mutation action and structured error handling.", ["validated-action", "origin-safe", "verify"]],
   ["modify-store", "Extend a global store and update its consumers.", ["store-shape", "consumer-types", "typecheck"]],
   ["style-ui", "Improve responsive styling and keyboard accessibility.", ["responsive", "keyboard", "verify"]],
-  ["repair", "Repair the supplied Tavo diagnostic without unrelated edits.", ["diagnostic-cleared", "minimal-diff", "verify"]]
+  ["repair", "Repair the supplied Tavo.js diagnostic without unrelated edits.", ["diagnostic-cleared", "minimal-diff", "verify"]]
 ];
 
 const fixtures = ["small", "medium", "large", "typescript", "mixed-js-ts"];
@@ -27,7 +27,7 @@ export const agentEvaluationTasks = taskTemplates.flatMap(([task, prompt, assert
     task,
     fixture,
     target: task.includes("component") ? "AccountCard" : task === "modify-store" ? "session" : "/account",
-    prompt: `${prompt} Preserve existing behavior and use the canonical Tavo APIs.`,
+    prompt: `${prompt} Preserve existing behavior and use the canonical Tavo.js APIs.`,
     allowedTools: ["agent-context", "inspect", "change", "verify"],
     assertions,
     maxContextBytes: 8192,

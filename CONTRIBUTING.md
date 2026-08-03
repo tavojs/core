@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Tavo.
+Thanks for helping improve Tavo.js Framework.
 
 ## Development
 
@@ -56,9 +56,41 @@ publishing setup are documented in [docs/releasing.md](./docs/releasing.md).
 The public repository accepts normal pull requests. Maintainers incorporate merged public changes
 into the development source before the next release sync so public contributions are preserved.
 
+## License and copyright
+
+Contributions are submitted under the repository's [MIT License](./LICENSE). Contributors retain
+copyright in their own contributions, and no copyright assignment is required.
+
+You must have the legal right to submit all code, documentation, tests, examples, designs, and other
+material you contribute. Do not submit incompatible copied material, confidential material,
+secrets, generated credentials, or personal data.
+
+The MIT License does not grant trademark rights. See [TRADEMARKS.md](./TRADEMARKS.md) for the
+trademark policy that applies to Tavo.js Framework names and logos.
+
+## Developer Certificate of Origin
+
+Every commit in a contribution must carry a Developer Certificate of Origin sign-off. Create a
+signed-off commit with:
+
+```bash
+git commit --signoff
+```
+
+This adds a commit trailer in the following form:
+
+```text
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+By signing off, you certify the contribution under the
+[Developer Certificate of Origin 1.1](https://developercertificate.org/). Unsigned commits may need
+to be corrected before the contribution can be merged.
+
 ## Documentation Style
 
-Describe Tavo by the APIs and workflows it provides. Do not position the framework through comparisons or by framing it around APIs it does not provide.
+Describe Tavo.js Framework by the APIs and workflows it provides. Do not position the framework
+through comparisons or by framing it around APIs it does not provide.
 
 Lead with functional page and layout modules. Use named exports for route features and
 `prerender = true` for build-time HTML. Present `defineRoutePage(...)` only when its route-aware

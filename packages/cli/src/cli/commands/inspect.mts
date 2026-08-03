@@ -77,7 +77,7 @@ export async function printProjectInfo(flags?: CliFlags): Promise<void> {
     return;
   }
 
-  console.log("Tavo project info");
+  console.log("Tavo.js project info");
   console.log("");
   console.log(`Root:            ${payload.root}`);
   console.log(`Package manager: ${payload.packageManager}`);
@@ -104,7 +104,7 @@ export async function printInventory(flags?: CliFlags): Promise<void> {
     return;
   }
 
-  console.log("Tavo inventory");
+  console.log("Tavo.js inventory");
   console.log("");
   console.log(`Pages:      ${payload.pages.length}`);
   console.log(`Layouts:    ${payload.layouts.length}`);
@@ -210,7 +210,7 @@ export async function printDoctor(
       );
     } else {
       console.log(
-        `Tavo doctor applied ${applied.length} fix${applied.length === 1 ? "" : "es"}.`,
+        `Tavo.js doctor applied ${applied.length} fix${applied.length === 1 ? "" : "es"}.`,
       );
       if (skipped.length > 0) {
         console.log(
@@ -234,10 +234,10 @@ export async function printDoctor(
     return diagnostics;
   }
   if (diagnostics.length === 0) {
-    console.log("Tavo doctor: no issues found.");
+    console.log("Tavo.js doctor: no issues found.");
     return diagnostics;
   }
-  console.log("Tavo doctor diagnostics:");
+  console.log("Tavo.js doctor diagnostics:");
   for (const diagnostic of diagnostics) {
     console.log(
       `  ${diagnostic.level.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}`,
@@ -270,9 +270,9 @@ export async function checkProject(
     console.log(
       ok
         ? diagnostics.length === 0
-          ? "Tavo check passed."
-          : "Tavo check passed with warnings."
-        : "Tavo check failed.",
+          ? "Tavo.js check passed."
+          : "Tavo.js check passed with warnings."
+        : "Tavo.js check failed.",
     );
     for (const diagnostic of diagnostics) {
       console.log(

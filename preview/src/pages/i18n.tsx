@@ -3,7 +3,7 @@ import { I18nDemo } from "../components/I18nDemo/index.tsx";
 export const head = (
   <>
     <title>tavo preview - i18n</title>
-    <meta name="description" content="Tavo localization preview with direct translation object access." />
+    <meta name="description" content="Tavo.js localization preview with direct translation object access." />
   </>
 );
 

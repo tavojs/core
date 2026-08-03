@@ -135,7 +135,7 @@ export async function createApp(
     '    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />',
     '    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />',
     '    <link rel="manifest" href="/site.webmanifest" />',
-    "    <title>Tavo counter</title>",
+    "    <title>Tavo.js counter</title>",
     "  </head>",
     "  <body>",
     '    <div id="app"></div>',
@@ -162,7 +162,7 @@ export async function createApp(
   await writeProjectFile(path.join(root, "src/pages/index.tsx"), [
     'import { Seo, createTavo } from "@tavojs/core";',
     "",
-    'const pageDescription = "A polished counter starter built with Tavo.";',
+    'const pageDescription = "A polished counter starter built with Tavo.js.";',
     "",
     "const HomePage = createTavo({",
     '  model: () => ({ count: 0, theme: "dark" as "light" | "dark" }),',
@@ -170,7 +170,7 @@ export async function createApp(
     '    <main className={`home-shell theme-${state.theme}`}>',
     '      <header className="app-header">',
     '        <div className="header-inner">',
-    '          <a className="brand" href="/" aria-label="Tavo home">',
+    '          <a className="brand" href="/" aria-label="Tavo.js home">',
     '            <img src="/tavo.svg" alt="" width="44" height="44" />',
     '            <span>Tavo<span className="brand-accent">.js</span></span>',
     "          </a>",
@@ -188,7 +188,7 @@ export async function createApp(
     '      <div className="page-content">',
     '        <section className="hero" aria-labelledby="page-title">',
     '          <div className="hero-copy">',
-    '            <p className="eyebrow"><span className="status-dot" /> Tavo starter</p>',
+    '            <p className="eyebrow"><span className="status-dot" /> Tavo.js starter</p>',
     '            <h1 id="page-title">State that moves <span>with you.</span></h1>',
     '            <p className="hero-description">A small counter with reactive state,',
     '              polished interactions, and production-ready structure.</p>',
@@ -228,13 +228,13 @@ export async function createApp(
     '          <article><span className="card-number">03</span><h2>Ready to extend</h2>',
     '            <p>Add routes, stores, loaders, and server rendering when you need them.</p></article>',
     "        </section>",
-    '        <footer className="app-footer"><span>Built with Tavo</span><code>src/pages/index.tsx</code></footer>',
+    '        <footer className="app-footer"><span>Built with Tavo.js</span><code>src/pages/index.tsx</code></footer>',
     "      </div>",
     "    </main>",
     "  )",
     "});",
     "",
-    'export const head = <Seo title="Tavo counter" description={pageDescription} />;',
+    'export const head = <Seo title="Tavo.js counter" description={pageDescription} />;',
     "",
     "export default HomePage;",
     ""
@@ -249,7 +249,7 @@ export async function createApp(
     createAgentManifestSource(packageManager)
   );
 
-  console.log(`Created Tavo app in ${root}`);
+  console.log(`Created Tavo.js app in ${root}`);
   console.log("");
   console.log("Next steps:");
   console.log(`  cd ${dir}`);

@@ -65,7 +65,7 @@ export function installTavoDevtoolsPanel(options?: {
   const details = document.createElement("details");
   details.open = options?.initiallyOpen ?? false;
   const summary = document.createElement("summary");
-  summary.textContent = "Tavo Runtime";
+  summary.textContent = "Tavo.js Runtime";
   summary.style.cssText = "cursor:pointer;padding:10px 12px;font-weight:700";
   const toolbar = document.createElement("div");
   toolbar.style.cssText = "display:flex;justify-content:flex-end;padding:0 10px 6px";

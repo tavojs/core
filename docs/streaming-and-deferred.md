@@ -3,7 +3,7 @@
 > Online guide:
 > [tavojs.dev/docs/core/streaming-and-async](https://tavojs.dev/docs/core/streaming-and-async)
 
-This guide explains Tavo’s progressive SSR features.
+This guide explains Tavo.js’s progressive SSR features.
 
 ## Why Deferred Rendering Exists
 
@@ -14,7 +14,7 @@ Some parts of a page are expensive or slow to load:
 - secondary content panels
 - remote data with higher latency
 
-Tavo allows the initial HTML shell to render first, then progressively patch in deferred sections.
+Tavo.js allows the initial HTML shell to render first, then progressively patch in deferred sections.
 
 ## `Deferred`
 
@@ -43,7 +43,7 @@ This renders:
 
 ## Shared Deferred Values
 
-Tavo also supports shared deferred units:
+Tavo.js also supports shared deferred units:
 
 ```tsx
 import { Deferred, createDeferredValue } from "@tavojs/core";
@@ -81,7 +81,7 @@ That gives progressive delivery while keeping the page authoring model stable.
 
 Progressive deferred streaming is SSR-only.
 
-In SSR mode, promise-backed `Deferred` boundaries render fallback HTML first, then Tavo streams patch scripts that replace the fallback when each promise resolves.
+In SSR mode, promise-backed `Deferred` boundaries render fallback HTML first, then Tavo.js streams patch scripts that replace the fallback when each promise resolves.
 
 In pure CSR mode, there is no server HTML stream to patch. Promise-backed `Deferred` boundaries therefore render their fallback UI and do not run client-side stream coordination. Use route loaders, controllers, or stores for CSR data loading that must resolve in the browser.
 
@@ -144,13 +144,13 @@ This helps when:
 
 ## Current Scope
 
-Tavo supports true progressive HTML patch streaming for deferred sections, shaped around Tavo’s own runtime and page model.
+Tavo.js supports true progressive HTML patch streaming for deferred sections, shaped around Tavo.js’s own runtime and page model.
 
 ## Content Security Policy
 
 Deferred streaming uses small inline patch scripts to replace fallback HTML as async content resolves.
 
-If your app uses a strict Content Security Policy, pass the document `nonce` through SSR render options. Tavo applies it to the serialized state script and every deferred patch script:
+If your app uses a strict Content Security Policy, pass the document `nonce` through SSR render options. Tavo.js applies it to the serialized state script and every deferred patch script:
 
 ```ts
 createNodeRequestHandler({

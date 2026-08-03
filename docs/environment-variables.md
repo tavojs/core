@@ -19,7 +19,7 @@ signing keys, database URLs, private tokens, or any value that must remain secre
 
 ## Server Environment Files
 
-Tavo loads server environment files from the project root in this order:
+Tavo.js loads server environment files from the project root in this order:
 
 ```text
 .env

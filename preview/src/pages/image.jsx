@@ -9,13 +9,13 @@ export default function ImagePage() {
     <section className="tavo-stack">
       <Seo
         title="tavo preview - SEO asset components"
-        description="Server-optimized images, managed fonts, SEO metadata, and JSON-LD scripts rendered by Tavo."
+        description="Server-optimized images, managed fonts, SEO metadata, and JSON-LD scripts rendered by Tavo.js."
         canonical="https://preview.tavojs.dev/image"
         keywords={["tavo", "seo", "image optimization", "json-ld", "fonts"]}
         openGraph={{
           type: "website",
           image: "https://preview.tavojs.dev/tavo-landscape.svg",
-          siteName: "Tavo Preview"
+          siteName: "Tavo.js Preview"
         }}
         twitter={{
           card: "summary_large_image"
@@ -35,7 +35,7 @@ export default function ImagePage() {
         json={{
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          name: "Tavo",
+          name: "Tavo.js",
           applicationCategory: "WebFramework",
           operatingSystem: "Any"
         }}
@@ -57,7 +57,7 @@ export default function ImagePage() {
       <section className="tavo-panel">
         <Image
           src="/tavo-landscape.svg"
-          alt="Stylized Tavo mountain landscape illustration"
+          alt="Stylized Tavo.js mountain landscape illustration"
           width={960}
           height={540}
           sizes="(max-width: 900px) 100vw, 960px"
@@ -69,12 +69,12 @@ export default function ImagePage() {
       <section className="tavo-panel">
         <h3>SVG Components</h3>
         <p className="tavo-muted">
-          Import <code>*.svg?component</code> to render inline SVG as a Tavo component. Props are
+          Import <code>*.svg?component</code> to render inline SVG as a Tavo.js component. Props are
           applied directly to the root SVG, so classes, inline styles, ARIA labels, and sizing work
           like normal JSX.
         </p>
         <TavoGlyph
-          aria-label="Tavo glyph"
+          aria-label="Tavo.js glyph"
           width="96"
           height="96"
           style={{ color: "#7c5cff", display: "block" }}
@@ -84,7 +84,7 @@ export default function ImagePage() {
       <section className="tavo-panel">
         <pre className="tavo-code">{`<Seo
   title="tavo preview - SEO asset components"
-  description="Server-optimized images, managed fonts, SEO metadata, and JSON-LD scripts rendered by Tavo."
+  description="Server-optimized images, managed fonts, SEO metadata, and JSON-LD scripts rendered by Tavo.js."
   canonical="https://preview.tavojs.dev/image"
   openGraph={{ type: "website", image: "https://preview.tavojs.dev/tavo-landscape.svg" }}
   twitter={{ card: "summary_large_image" }}
@@ -103,13 +103,13 @@ export default function ImagePage() {
   json={{
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Tavo"
+    name: "Tavo.js"
   }}
 />
 
 <Image
   src="/tavo-landscape.svg"
-  alt="Stylized Tavo mountain landscape illustration"
+  alt="Stylized Tavo.js mountain landscape illustration"
   width={960}
   height={540}
   sizes="(max-width: 900px) 100vw, 960px"
@@ -119,7 +119,7 @@ export default function ImagePage() {
 import TavoGlyph from "../assets/tavo-glyph.svg?component";
 
 <TavoGlyph
-  aria-label="Tavo glyph"
+  aria-label="Tavo.js glyph"
   width="96"
   height="96"
   style={{ color: "#7c5cff" }}

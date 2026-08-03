@@ -11,7 +11,7 @@ This deduplicated reference is generated from the published TypeScript declarati
 **stable since 1.0.** Project and Vite configuration.
 
 - `defineConfig` — Defines the single project configuration object and brands it for runtime validation.
-- `defineTavoViteConfig` — Defines a Vite config with the JSX runtime settings required by Tavo.
+- `defineTavoViteConfig` — Defines a Vite config with the JSX runtime settings required by Tavo.js.
 - `ExactTavoConfig`
 - `TavoConfig`
 - `TavoViteConfig`
@@ -27,7 +27,7 @@ This deduplicated reference is generated from the published TypeScript declarati
 - `clearServices` — Clears the shared service registry. Intended primarily for tests.
 - `configureDevDiagnostics` — Updates runtime diagnostics callbacks used by the DOM renderer.
 - `createInstrumentation` — Creates an isolated observer. Listener failures never interrupt framework work.
-- `createOpenTelemetryInstrumentation` — Adapts Tavo events to the stable tracing subset shared by OpenTelemetry implementations.
+- `createOpenTelemetryInstrumentation` — Adapts Tavo.js events to the stable tracing subset shared by OpenTelemetry implementations.
 - `createPagesManifest` — Convenience helper returning only sorted route definitions.
 - `createPagesManifestDetailed` — Builds the full pages manifest with routes, layouts, and diagnostics.
 - `createPagesTestHarness`
@@ -139,7 +139,7 @@ This deduplicated reference is generated from the published TypeScript declarati
 - `PluginStoreToken`
 - `PluginUse` — Application-owned ergonomic installation record.
 - `PluginUseConfiguration`
-- `TAVO_PLUGIN_API_VERSION` — Current public contract implemented by the Tavo plugin runtime.
+- `TAVO_PLUGIN_API_VERSION` — Current public contract implemented by the Tavo.js plugin runtime.
 - `TavoPlugin`
 - `TavoPluginInput` — Author input; normalized to the compiler's internal graph configuration.
 - `TavoPluginManifest`
@@ -252,7 +252,7 @@ No named exports.
 - `ApiStability`
 - `ApiStabilityEntry`
 - `autoFocus` — Creates a directive that focuses the element after it is mounted.
-- `bootTavo` — Boots the default Tavo app behavior for projects that use file-based pages.
+- `bootTavo` — Boots the default Tavo.js app behavior for projects that use file-based pages.
 - `BootTavoOptions`
 - `BootTavoResult`
 - `captureFocusRestore` — Captures current focus and returns a function that restores it later.
@@ -311,7 +311,7 @@ No named exports.
 - `getFocusableElements` — Finds focusable descendants in DOM order.
 - `getGlobalStore` — Looks up a previously defined global store by name.
 - `getService` — Looks up a previously registered service by name.
-- `getTavoBootMode` — Returns the boot mode Tavo will use for the current document.
+- `getTavoBootMode` — Returns the boot mode Tavo.js will use for the current document.
 - `h`
 - `hasGlobalStore` — Returns true when a named global store exists in the shared registry.
 - `hasService` — Returns true when a named service exists in the shared registry.
@@ -395,7 +395,7 @@ No named exports.
 - `StyleOptions`
 - `StyleRegistry`
 - `StyleRegistryEntry`
-- `TAVO_API_STABILITY` — Machine-readable stability contract for public package entry points. Stable entry points follow semantic versioning from Tavo 1.0 onward.
+- `TAVO_API_STABILITY` — Machine-readable stability contract for public package entry points. Stable entry points follow semantic versioning from Tavo.js 1.0 onward.
 - `TAVO_DIAGNOSTIC_MESSAGES`
 - `TavoAction`
 - `TavoBootMode`

@@ -8,10 +8,10 @@ import type { FixOperation, ProjectDiagnostic } from "./types.mjs";
 
 export function printFixDryRun(diagnostics: ProjectDiagnostic[]): void {
   if (diagnostics.length === 0) {
-    console.log("Tavo doctor: no fixes suggested.");
+    console.log("Tavo.js doctor: no fixes suggested.");
     return;
   }
-  console.log("Tavo doctor fix dry-run:");
+  console.log("Tavo.js doctor fix dry-run:");
   for (const diagnostic of diagnostics) {
     if (!diagnostic.suggestedFix) {
       continue;

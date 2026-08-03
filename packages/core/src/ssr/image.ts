@@ -72,7 +72,7 @@ function imageOptimizerHintForError(message: string, source?: string | null): st
 
   if (message.includes("remote images are disabled") || message.includes("remote image host is not allowed")) {
     return [
-      "Remote images rendered through Tavo Image must be allowed in your app config.",
+      "Remote images rendered through Tavo.js Image must be allowed in your app config.",
       "Add a narrow allowlist to the root tavo.config.ts:",
       "export default defineConfig({",
       "  ssr: {",

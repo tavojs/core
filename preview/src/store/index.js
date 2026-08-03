@@ -53,7 +53,7 @@ export const appStore = defineGlobalStore("preview:app", (set) => ({
     { id: "b", label: "Beta" },
     { id: "c", label: "Gamma" },
   ],
-  notes: ["Tavo supports MVC components.", "Pages are routed from src/pages."],
+  notes: ["Tavo.js supports MVC components.", "Pages are routed from src/pages."],
   lastUpdate: nowTime(),
   setTheme(value) {
     set({

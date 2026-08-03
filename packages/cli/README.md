@@ -1,6 +1,6 @@
 # @tavojs/cli
 
-CLI for creating, building, inspecting, and previewing Tavo apps.
+CLI for creating, building, inspecting, and previewing Tavo.js apps.
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ npm run build
 npm run preview:ssr
 ```
 
-Tavo projects use `@tavojs/core` for the app runtime and `@tavojs/cli` for local development, project inspection, generation, and build commands. The package installs the `tavo` executable.
+Tavo.js projects use `@tavojs/core` for the app runtime and `@tavojs/cli` for local development, project inspection, generation, and build commands. The package installs the `tavo` executable.
 
 ## Common Commands
 
@@ -36,7 +36,7 @@ tavo info
 tavo monitor
 ```
 
-When `dir` is omitted, Tavo prompts for the project name.
+When `dir` is omitted, Tavo.js prompts for the project name.
 
 Use `--network` with `dev` or `preview` to bind to `0.0.0.0` for testing from another device on the same local network.
 
@@ -105,4 +105,4 @@ generate, development, inspection, build, preview, monitoring, and automation wo
 ## Requirements
 
 - Node.js `^20.19.0 || >=22.12.0`
-- A Tavo app with `@tavojs/core` installed
+- A Tavo.js app with `@tavojs/core` installed

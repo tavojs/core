@@ -26,7 +26,7 @@ function assertPublicPackageMetadata(packageJson, packageName, directory, expect
   assert.equal(typeof packageJson.description, "string");
   assert.ok(packageJson.description.length > 0, `${packageName} should define a description`);
   assert.equal(packageJson.license, "MIT");
-  assert.equal(packageJson.author, "Tavo contributors");
+  assert.equal(packageJson.author, "Hrachya Martirosyan");
   assert.equal(packageJson.repository?.type, "git");
   assert.equal(packageJson.repository?.url, canonicalRepositoryUrl);
   assert.equal(packageJson.repository?.directory, directory);
@@ -416,13 +416,15 @@ test("compat: release metadata tracks package versions and scaffolds 1.x depende
     "utf8"
   );
 
-  assert.equal(corePackageJson.version, "1.0.1");
-  assert.equal(cliPackageJson.version, "1.0.0");
+  assert.equal(corePackageJson.version, "1.0.2");
+  assert.equal(cliPackageJson.version, "1.0.1");
+  assert.match(coreChangelog, /^## 1\.0\.2$/m);
   assert.match(coreChangelog, /^## 1\.0\.1$/m);
   assert.match(coreChangelog, /^## 1\.0\.0$/m);
+  assert.match(cliChangelog, /^## 1\.0\.1$/m);
   assert.match(cliChangelog, /^## 1\.0\.0$/m);
-  assert.match(coreChangelog, /Release the stable Tavo 1\.0 framework and CLI contracts/);
-  assert.match(cliChangelog, /Release the stable Tavo 1\.0 framework and CLI contracts/);
+  assert.match(coreChangelog, /Release the stable Tavo\.js 1\.0 framework and CLI contracts/);
+  assert.match(cliChangelog, /Release the stable Tavo\.js 1\.0 framework and CLI contracts/);
   assert.match(scaffoldSource, /"@tavojs\/core": "\^1\.0\.0"/);
   assert.match(scaffoldSource, /"@tavojs\/cli": "\^1\.0\.0"/);
 });

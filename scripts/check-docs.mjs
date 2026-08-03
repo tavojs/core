@@ -10,7 +10,10 @@ const scriptExtensions = /\.(?:[cm]?[jt]sx?)$/;
 const markdownFiles = [
   "README.md",
   "CHANGELOG.md",
+  "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.md",
+  "SECURITY.md",
+  "TRADEMARKS.md",
   "packages/core/README.md",
   "packages/cli/README.md",
   ...(await collectFiles(path.join(root, "docs"), (file) => file.endsWith(".md"))),
@@ -84,7 +87,7 @@ function shouldReportTypeDiagnostic(diagnostic, virtualFiles) {
     return false;
   }
   // Documentation fragments may deliberately omit local application helpers. Imports from
-  // the built Tavo package, assignability, strict callback types, and nullability still fail.
+  // the built Tavo.js package, assignability, strict callback types, and nullability still fail.
   if (diagnostic.code === 2304 || diagnostic.code === 18004) return false;
   const moduleName = unresolvedModule(diagnostic);
   if (
@@ -400,6 +403,18 @@ const forbidden = [
   {
     pattern: /\bpre-?1\.0\b|\bprelaunch\b|\bprivate preview\b|\bcoming (?:soon|later)\b|\broadmap\b|\bbefore the first release\b|\brelease preparation\b/i,
     description: "prelaunch marker"
+  },
+  {
+    pattern: /\bTavo\b(?!\.js)/,
+    description: "standalone Tavo brand name; use Tavo.js",
+    allow(file, source) {
+      if (relative(file).startsWith("handover/")) return true;
+      const withoutComposedLogo = source.replace(
+        /<span>Tavo<span className=["']brand-accent["']>\.js<\/span>/g,
+        "Tavo.js"
+      );
+      return !/\bTavo\b(?!\.js)/.test(withoutComposedLogo);
+    }
   }
 ];
 for (const file of contractFiles) {

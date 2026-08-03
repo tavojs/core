@@ -176,8 +176,8 @@ export async function printPluginInspection(
   } else {
     console.log(
       inspection.valid
-        ? "Tavo plugin graph is valid."
-        : "Tavo plugin graph is invalid.",
+        ? "Tavo.js plugin graph is valid."
+        : "Tavo.js plugin graph is invalid.",
     );
     console.log(`Plugins:      ${inspection.plugins.length}`);
     console.log(`Capabilities: ${inspection.capabilities.length}`);

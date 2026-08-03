@@ -3,11 +3,11 @@
 > Online guide:
 > [tavojs.dev/docs/core/testing-and-diagnostics](https://tavojs.dev/docs/core/testing-and-diagnostics)
 
-This guide explains how to validate Tavo apps and how to use the framework’s diagnostics surfaces.
+This guide explains how to validate Tavo.js apps and how to use the framework’s diagnostics surfaces.
 
 ## Testing Layers
 
-Tavo currently uses several levels of validation:
+Tavo.js currently uses several levels of validation:
 
 - build checks
 - integration tests
@@ -105,7 +105,7 @@ The benchmark suite helps detect performance regressions in:
 - keyed list updates
 - hydration
 
-Tavo also uses thresholds so benchmark runs can act as regression gates instead of only raw numbers.
+Tavo.js also uses thresholds so benchmark runs can act as regression gates instead of only raw numbers.
 
 Use JSON output for CI artifacts or before/after comparisons:
 
@@ -119,7 +119,7 @@ It also includes threshold metadata and a pass/fail status for each benchmark, a
 
 ## Runtime Diagnostics
 
-Tavo can report:
+Tavo.js can report:
 
 - hydration mismatches
 - runtime errors
@@ -163,7 +163,7 @@ This helps narrow down where SSR and CSR diverged.
 
 ## Accessibility Defaults
 
-Tavo also ships accessibility-oriented routing behavior:
+Tavo.js also ships accessibility-oriented routing behavior:
 
 - live region announcements
 - focus restoration after client navigation

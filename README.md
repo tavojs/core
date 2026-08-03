@@ -1,4 +1,4 @@
-# Tavo
+# Tavo.js
 
 **The Frontend Framework for Complete Web Apps**
 
@@ -8,7 +8,7 @@ Build CSR and SSR TypeScript applications with file-based routing, reactive stor
 
 Requirements: Node.js `^20.19.0 || >=22.12.0`.
 
-Node 18 is not supported because Tavo uses Vite 7. Vite 7 requires this Node range and relies on
+Node 18 is not supported because Tavo.js uses Vite 7. Vite 7 requires this Node range and relies on
 Node's newer unflagged `require(esm)` behavior; see the
 [Vite 7 migration guide](https://v7.vite.dev/guide/migration.html).
 
@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-The generated app includes the Tavo runtime, Vite configuration, file-based pages, and development/build scripts.
+The generated app includes the Tavo.js runtime, Vite configuration, file-based pages, and development/build scripts.
 
 ## Minimal App
 
@@ -40,7 +40,7 @@ Create a home page:
 export const head = <title>Home</title>;
 
 export default function HomePage() {
-  return <main>Hello from Tavo</main>;
+  return <main>Hello from Tavo.js</main>;
 }
 ```
 
@@ -80,7 +80,7 @@ for this source checkout.
 
 ## Common Commands
 
-Run these inside a Tavo application:
+Run these inside a Tavo.js application:
 
 ```bash
 tavo dev
@@ -114,6 +114,9 @@ Maintainers should follow [docs/releasing.md](./docs/releasing.md) for versionin
 - [`@tavojs/core`](./packages/core/README.md): runtime, framework, router, SSR, stores, and component APIs
 - [`@tavojs/cli`](./packages/cli/README.md): application scaffolding, development, build, inspection, and verification CLI
 
-## License
+## Legal, Contributing, and Security
 
-MIT
+- [MIT License](./LICENSE)
+- [Contributing and DCO requirements](./CONTRIBUTING.md)
+- [Trademark policy](./TRADEMARKS.md)
+- [Security policy and private vulnerability reporting](./SECURITY.md)

@@ -303,7 +303,7 @@ export function createServerOnlyGuardPlugin() {
         throw new TavoError(
           "TAVO_CONFIG_001",
           [
-            "Tavo server-only module reached the client bundle.",
+            "Tavo.js server-only module reached the client bundle.",
             `Module: ${file}`,
             describeImportChain(this, file, root),
             "Move secrets, sessions, database clients, and private API clients behind server-only actions, loaders, or middleware.",
@@ -319,7 +319,7 @@ export function createServerOnlyGuardPlugin() {
         throw new TavoError(
           "TAVO_CONFIG_001",
           [
-            "Tavo blocked a static server-only import from client-bound code.",
+            "Tavo.js blocked a static server-only import from client-bound code.",
             `Module: ${file}`,
             `Import: ${serverImport}`,
             describeImportChain(this, file, root),
@@ -334,7 +334,7 @@ export function createServerOnlyGuardPlugin() {
         throw new TavoError(
           "TAVO_CONFIG_001",
           [
-            "Tavo blocked a dynamic server-only import from client-bound code.",
+            "Tavo.js blocked a dynamic server-only import from client-bound code.",
             `Module: ${file}`,
             `Import: ${dynamicServerImport}`,
             describeImportChain(this, file, root),
@@ -350,7 +350,7 @@ export function createServerOnlyGuardPlugin() {
         throw new TavoError(
           "TAVO_CONFIG_002",
           [
-            `Tavo blocked likely secret environment variable ${sensitiveEnvironment.name} from client-bound code.`,
+            `Tavo.js blocked likely secret environment variable ${sensitiveEnvironment.name} from client-bound code.`,
             `Module: ${file}`,
             `Expression: ${sensitiveEnvironment.expression}.${sensitiveEnvironment.name}`,
             describeImportChain(this, file, root),

@@ -8,6 +8,7 @@ Describe the user-visible behavior and motivation.
 - [ ] Public API or CLI changes include documentation.
 - [ ] User-visible package changes include a Changeset, or this PR explains why none is needed.
 - [ ] No private credentials, internal handovers, or unpublished planning material are included.
+- [ ] I have the right to submit this work, and every commit includes a DCO sign-off.
 
 ## Compatibility
 

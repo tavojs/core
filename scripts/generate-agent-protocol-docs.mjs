@@ -19,7 +19,7 @@ const lines = [
   "",
   "> Online automation guide: [tavojs.dev/docs/cli/automation](https://tavojs.dev/docs/cli/automation)",
   "",
-  `Tavo machine protocol v${AGENT_PROTOCOL_VERSION} is the ${AGENT_PROTOCOL_STABILITY} canonical CLI + JSON contract for autonomous code generation. Compact context is limited to ${AGENT_CONTEXT_MAX_BYTES} bytes; request full or targeted detail only when needed.`,
+  `Tavo.js machine protocol v${AGENT_PROTOCOL_VERSION} is the ${AGENT_PROTOCOL_STABILITY} canonical CLI + JSON contract for autonomous code generation. Compact context is limited to ${AGENT_CONTEXT_MAX_BYTES} bytes; request full or targeted detail only when needed.`,
   "",
   "## Agent Loop",
   "",

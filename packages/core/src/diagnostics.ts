@@ -9,7 +9,7 @@ export const TAVO_DIAGNOSTIC_MESSAGES = Object.freeze({
   TAVO_CONFIG_001: "A server-only module reached the client bundle.",
   TAVO_CONFIG_002:
     "A likely secret environment value is referenced by client code.",
-  TAVO_PLUGIN_001: "A plugin targets an unsupported Tavo plugin API version.",
+  TAVO_PLUGIN_001: "A plugin targets an unsupported Tavo.js plugin API version.",
   TAVO_PLUGIN_002: "A plugin manifest or identity is invalid.",
   TAVO_PLUGIN_003: "Plugin ownership or contribution is duplicated.",
   TAVO_PLUGIN_004:

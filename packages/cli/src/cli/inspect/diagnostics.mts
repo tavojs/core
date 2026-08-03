@@ -31,7 +31,7 @@ export async function collectProjectDiagnostics(rootDir: string): Promise<Projec
       code: "missing-package-json",
       level: "error",
       message: "No package.json found in the project root.",
-      suggestedFix: "Run `tavo create app <dir>` or add a package.json before using Tavo project commands.",
+      suggestedFix: "Run `tavo create app <dir>` or add a package.json before using Tavo.js project commands.",
       docs: "docs/getting-started.md"
     });
   }
@@ -176,7 +176,7 @@ export async function collectProjectDiagnostics(rootDir: string): Promise<Projec
       diagnostics.push({
         code: "react-api-in-tavo-component",
         level: "warning",
-        message: "Tavo components should use controllers, stores, refs, and lifecycle methods instead of React imports or hooks.",
+        message: "Tavo.js components should use controllers, stores, refs, and lifecycle methods instead of React imports or hooks.",
         file: fileRelative,
         line: analysis.reactApiLine,
         sourceRange: sourceRangeFromLine(analysis.reactApiLine),
