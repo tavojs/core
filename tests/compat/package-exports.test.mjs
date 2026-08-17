@@ -416,11 +416,13 @@ test("compat: release metadata tracks package versions and scaffolds 1.x depende
     "utf8"
   );
 
-  assert.equal(corePackageJson.version, "1.0.2");
-  assert.equal(cliPackageJson.version, "1.0.1");
+  assert.equal(corePackageJson.version, "1.0.3");
+  assert.equal(cliPackageJson.version, "1.0.2");
+  assert.match(coreChangelog, /^## 1\.0\.3$/m);
   assert.match(coreChangelog, /^## 1\.0\.2$/m);
   assert.match(coreChangelog, /^## 1\.0\.1$/m);
   assert.match(coreChangelog, /^## 1\.0\.0$/m);
+  assert.match(cliChangelog, /^## 1\.0\.2$/m);
   assert.match(cliChangelog, /^## 1\.0\.1$/m);
   assert.match(cliChangelog, /^## 1\.0\.0$/m);
   assert.match(coreChangelog, /Release the stable Tavo\.js 1\.0 framework and CLI contracts/);

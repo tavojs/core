@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createClientAssetPlan } from "../dist/cli/commands/build.mjs";
 import { createSsrEntrySource } from "../dist/cli/build/templates.mjs";
-import { externalizePrerenderedStyles } from "../dist/cli/build/prerender.mjs";
+import {
+  collectPrerenderedTrailingSlashLinkDiagnostics,
+  externalizePrerenderedStyles,
+} from "../dist/cli/build/prerender.mjs";
 
 test("production assets: route modules collect dependency CSS before owning CSS", () => {
   const plan = createClientAssetPlan({
@@ -136,4 +139,35 @@ test("production assets: custom attributed style tags stay inline", () => {
 
   assert.equal(result.asset, undefined);
   assert.equal(result.html, html);
+});
+
+test("prerender diagnostics find actual noncanonical page hrefs and preserve suffixes", () => {
+  const diagnostics = collectPrerenderedTrailingSlashLinkDiagnostics({
+    html: [
+      '<a href="/docs?tab=api#top">Docs</a>',
+      '<a href="/docs/?tab=ok#top">Canonical</a>',
+      '<a href="https://example.test/docs">External</a>',
+      '<a href="#top">Hash</a>',
+      '<a href="mailto:help@example.test">Mail</a>',
+      '<a href="tel:+123">Phone</a>',
+      '<a download href="/docs">Download</a>',
+      '<a href="/assets/app.js">Asset</a>',
+      '<a href="/favicon.ico">Public</a>',
+      '<a href="/api/data">Plugin endpoint</a>',
+    ].join(""),
+    pagePathname: "/",
+    routes: [
+      { path: "/docs" },
+      { path: "/assets/*path" },
+      { path: "/:file" },
+      { path: "/api/:name" },
+    ],
+    policy: "always",
+    endpoints: [{ methods: ["GET"], kind: "subtree", path: "/api" }],
+    publicPathnames: new Set(["/favicon.ico"]),
+  });
+
+  assert.deepEqual(diagnostics, [
+    'Prerendered / contains noncanonical internal page href "/docs?tab=api#top"; routing.trailingSlash="always" requires "/docs/?tab=api#top".',
+  ]);
 });

@@ -26,6 +26,7 @@ type InternalRequestScope = PluginRequestScope & {
     request: Request;
     params: Record<string, string>;
     instanceId: string;
+    urlPolicy: PluginRequestScope["urlPolicy"];
     resolve: PluginRequestScope["resolve"];
     tryResolve: PluginRequestScope["tryResolve"];
   };
@@ -79,6 +80,7 @@ export function createRequestScope(
       factory({
         request,
         instanceId: provider?.instanceId ?? "default",
+        urlPolicy: state.urlPolicy,
         resolve: providerResolve,
         tryResolve: providerTryResolve,
       }),
@@ -110,6 +112,7 @@ export function createRequestScope(
   };
   return {
     request,
+    urlPolicy: state.urlPolicy,
     resolve,
     tryResolve,
     async dispose() {
@@ -126,6 +129,7 @@ export function createRequestScope(
         request,
         params: {},
         instanceId: consumer.instanceId,
+        urlPolicy: state.urlPolicy,
         resolve: (token) => resolveFor(consumer, token),
         tryResolve: async (token) => {
           try {

@@ -149,7 +149,9 @@ This deduplicated reference is generated from the published TypeScript declarati
 
 **stable since 1.0.** Routing, navigation, and route module APIs.
 
+- `canonicalizeTrailingSlash` — Applies a trailing-slash policy without disturbing a URL's search or hash.
 - `createRouter` — Creates a client router with history navigation and pattern matching.
+- `CreateRouterOptions`
 - `defineAction` — Defines a server route action for non-GET requests while preserving handler types.
 - `defineLoader` — Defines a route loader while preserving its return type for app-level helpers.
 - `defineMiddleware` — Defines route middleware with a stable signature.
@@ -189,6 +191,8 @@ This deduplicated reference is generated from the published TypeScript declarati
 - `PageRouteDefinition`
 - `PageStaticParams`
 - `prefetchRoute` — Prefetches a route by resolving its loaders without changing browser location.
+- `ResolvedUrlPolicy`
+- `resolveUrlPolicy` — Resolves the public routing policy, including its backward-compatible default.
 - `RouteConfig`
 - `RouteParamsFromPath`
 - `Router`
@@ -200,6 +204,7 @@ This deduplicated reference is generated from the published TypeScript declarati
 - `subscribeAvailableRoutes` — Subscribes to route catalog updates.
 - `subscribePathname` — Subscribes to pathname changes.
 - `subscribeRouteStatus` — Subscribes to route status changes for one pathname or all routes.
+- `TrailingSlashPolicy`
 - `TypedPageModule`
 
 ## `@tavojs/core/server`

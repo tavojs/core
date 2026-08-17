@@ -25,7 +25,9 @@ export {
   isServerRuntime,
 } from "../framework/runtime/rendering.js";
 
-export type { RouteConfig, Router, RouterNavigateOptions, RouterParams } from "./types.js";
+export type { CreateRouterOptions, RouteConfig, Router, RouterNavigateOptions, RouterParams } from "./types.js";
+export { canonicalizeTrailingSlash, resolveUrlPolicy } from "./url-policy.js";
+export type { ResolvedUrlPolicy, TrailingSlashPolicy } from "./url-policy.js";
 export type { LinkProps } from "./react.js";
 export type {
   RouteStatus,

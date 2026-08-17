@@ -4,10 +4,13 @@ import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { fileExists } from "../utils/fs.mjs";
 import type { PackageManager } from "../types.mjs";
+import type { TavoPluginInput } from "@tavojs/core/plugin";
 
 type ProjectConfig = {
   pagesDir?: string;
   cssEntries?: string[];
+  plugins?: TavoPluginInput;
+  routing?: { trailingSlash?: "always" | "never" | "preserve" };
   build?: {
     prerenderStyles?: "inline" | "external";
     budgets?: {

@@ -2,8 +2,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
+import { canonicalizeTrailingSlash } from "@tavojs/core/router";
 import { ARTIFACT_SCHEMA_VERSION } from "../constants.mjs";
 import { toPosixPath } from "../utils/path.mjs";
+import type { PageRoute } from "../project/routes.mjs";
 
 type PrerenderedStaticPage = {
   pathname: string;
@@ -23,6 +25,107 @@ export type PrerenderStyleAsset = {
   css: string;
   styleIds: string[];
 };
+
+type PluginEndpoint = {
+  methods: readonly string[];
+  kind: "exact" | "subtree";
+  path: string;
+};
+
+function pageRouteMatches(pattern: string, pathname: string): boolean {
+  const route = pattern.split("/").filter(Boolean);
+  const parts = pathname.split("/").filter(Boolean);
+  const visit = (routeIndex: number, pathIndex: number): boolean => {
+    if (routeIndex === route.length) return pathIndex === parts.length;
+    const segment = route[routeIndex]!;
+    if (segment.startsWith("*?")) {
+      for (let end = parts.length; end >= pathIndex; end -= 1) if (visit(routeIndex + 1, end)) return true;
+      return false;
+    }
+    if (segment.startsWith("*")) {
+      for (let end = parts.length; end > pathIndex; end -= 1) if (visit(routeIndex + 1, end)) return true;
+      return false;
+    }
+    if (segment.startsWith(":?")) return visit(routeIndex + 1, pathIndex + 1) || visit(routeIndex + 1, pathIndex);
+    if (pathIndex >= parts.length) return false;
+    return (segment.startsWith(":") || segment === parts[pathIndex]) && visit(routeIndex + 1, pathIndex + 1);
+  };
+  return visit(0, 0);
+}
+
+function endpointMatches(endpoint: PluginEndpoint, pathname: string): boolean {
+  const endpointPath = endpoint.path === "/" ? "/" : endpoint.path.replace(/\/+$/, "");
+  return endpoint.kind === "subtree"
+    ? pathname === endpointPath || pathname.startsWith(`${endpointPath}/`)
+    : pathname === endpointPath;
+}
+
+export function collectPrerenderedTrailingSlashLinkDiagnostics({
+  html,
+  pagePathname,
+  routes,
+  policy,
+  endpoints = [],
+  publicPathnames = new Set<string>(),
+}: {
+  html: string;
+  pagePathname: string;
+  routes: readonly Pick<PageRoute, "path">[];
+  policy: "always" | "never" | "preserve";
+  endpoints?: readonly PluginEndpoint[];
+  publicPathnames?: ReadonlySet<string>;
+}): string[] {
+  if (policy === "preserve") return [];
+  const diagnostics: string[] = [];
+  const anchorPattern = /<a\b([^>]*)>/gi;
+  for (const anchor of html.matchAll(anchorPattern)) {
+    const attributes = anchor[1] ?? "";
+    if (/\bdownload(?:\s*=|\s|$)/i.test(attributes)) continue;
+    const hrefMatch = attributes.match(/\bhref\s*=\s*(["'])(.*?)\1/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[2]!;
+    if (!href.startsWith("/") || href.startsWith("//")) continue;
+    const pathname = href.split(/[?#]/, 1)[0] || "/";
+    if (
+      pathname === "/" ||
+      pathname === "/assets" ||
+      pathname.startsWith("/assets/") ||
+      publicPathnames.has(pathname) ||
+      endpoints.some((endpoint) => endpointMatches(endpoint, pathname)) ||
+      !routes.some((route) => pageRouteMatches(route.path, pathname))
+    ) continue;
+    const canonicalHref = canonicalizeTrailingSlash(href, policy);
+    if (canonicalHref === href) continue;
+    diagnostics.push(
+      `Prerendered ${pagePathname} contains noncanonical internal page href ${JSON.stringify(href)}; `
+      + `routing.trailingSlash=${JSON.stringify(policy)} requires ${JSON.stringify(canonicalHref)}.`,
+    );
+  }
+  return diagnostics;
+}
+
+async function collectPublicPathnames(rootDir: string): Promise<Set<string>> {
+  const publicDir = path.join(rootDir, "public");
+  const pathnames = new Set<string>();
+  const visit = async (directory: string): Promise<void> => {
+    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+      if (entry.isSymbolicLink()) continue;
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        await visit(file);
+      } else {
+        pathnames.add(`/${toPosixPath(path.relative(publicDir, file))}`);
+      }
+    }
+  };
+  try {
+    await visit(publicDir);
+    return pathnames;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Set();
+    throw error;
+  }
+}
 
 export function externalizePrerenderedStyles(html: string): {
   html: string;
@@ -126,11 +229,17 @@ export function safeOutputPathSegments(pathname: string): string[] | null {
 export async function writePrerenderedStaticPages({
   buildRoot,
   rootDir,
-  styleMode = "inline"
+  styleMode = "inline",
+  routes = [],
+  trailingSlash = "preserve",
+  endpoints = [],
 }: {
   buildRoot: string;
   rootDir: string;
   styleMode?: PrerenderStyleMode;
+  routes?: readonly PageRoute[];
+  trailingSlash?: "always" | "never" | "preserve";
+  endpoints?: readonly PluginEndpoint[];
 }): Promise<{ count: number; diagnostics: string[] }> {
   const clientDir = path.join(buildRoot, "client");
   const entryFile = path.join(buildRoot, "server", "entry.mjs");
@@ -144,6 +253,7 @@ export async function writePrerenderedStaticPages({
 
   const result = await entryModule.prerenderStaticPages();
   const diagnostics = [...(result.diagnostics ?? [])];
+  const publicPathnames = await collectPublicPathnames(rootDir);
   const written: Array<{ entry: PrerenderedStaticPage; target: string; styleAsset?: string }> = [];
   const targets = new Set<string>();
   const styleAssets = new Map<string, string>();
@@ -162,6 +272,14 @@ export async function writePrerenderedStaticPages({
     const transformed = styleMode === "external"
       ? externalizePrerenderedStyles(entry.html)
       : { html: entry.html, asset: undefined };
+    diagnostics.push(...collectPrerenderedTrailingSlashLinkDiagnostics({
+      html: transformed.html,
+      pagePathname: entry.pathname,
+      routes,
+      policy: trailingSlash,
+      endpoints,
+      publicPathnames,
+    }));
     if (transformed.asset) {
       const existing = styleAssets.get(transformed.asset.file);
       if (existing !== undefined && existing !== transformed.asset.css) {

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
-import { collectPageRoutes, generateRouteArtifacts, paramsTypeFromRoutePath } from "../dist/cli/project/routes.mjs";
+import { collectPageRoutes, collectTrailingSlashLinkDiagnostics, generateRouteArtifacts, paramsTypeFromRoutePath } from "../dist/cli/project/routes.mjs";
 import { createTempProject, readJson, writeFixtureFile } from "./helpers.mjs";
 
 test("collectPageRoutes supports index, route groups, layouts, dynamic, optional, and catch-all pages", async () => {
@@ -78,4 +78,32 @@ test("paramsTypeFromRoutePath reflects route parameter optionality", () => {
   assert.equal(paramsTypeFromRoutePath("/docs/:?section"), '{ "section": string | undefined }');
   assert.equal(paramsTypeFromRoutePath("/files/*all"), '{ "all": string }');
   assert.equal(paramsTypeFromRoutePath("/deep/*?slug"), '{ "slug": string | undefined }');
+});
+
+test("trailing slash diagnostics ignore policy-neutral framework Links and flag raw anchors", async () => {
+  const root = await createTempProject();
+  const about = await writeFixtureFile(root, "src/pages/about.tsx");
+  const blog = await writeFixtureFile(root, "src/pages/blog/[id].tsx");
+  await fs.writeFile(
+    path.join(root, "src/links.tsx"),
+    [
+      'import { Link } from "@tavojs/core";',
+      'import { Link as UiLink } from "@tavojs/ui";',
+      '<Link href="/about">Core</Link>;',
+      '<UiLink href="/blog/hello?q=1#top">UI</UiLink>;',
+      '<Button as={Link} href="/about">Composed</Button>;',
+      '<a href="/about">Raw</a>;',
+      '<Anchor href="/blog/hello?q=1#top">Uncanonicalized component</Anchor>;',
+      '<a href="/assets/app.js">Asset</a>;',
+    ].join("\n"),
+  );
+  const diagnostics = await collectTrailingSlashLinkDiagnostics(root, [
+    { path: "/about", file: about, files: [about] },
+    { path: "/blog/:id", file: blog, files: [blog] },
+  ], "always");
+  assert.equal(diagnostics.length, 2);
+  assert.match(diagnostics.join("\n"), /\/about\//);
+  assert.match(diagnostics.join("\n"), /\/blog\/hello\/\?q=1#top/);
+  assert.doesNotMatch(diagnostics.join("\n"), /Core|Composed/);
+  assert.doesNotMatch(diagnostics.join("\n"), /assets/);
 });

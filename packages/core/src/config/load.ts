@@ -28,6 +28,13 @@ function normalizeTavoConfig(value: unknown): TavoConfig {
   if (candidate.plugins !== undefined) {
     config.plugins = candidate.plugins;
   }
+  if (candidate.routing !== undefined) {
+    const trailingSlash = candidate.routing.trailingSlash;
+    if (trailingSlash !== undefined && !["always", "never", "preserve"].includes(trailingSlash)) {
+      throw new Error('tavo config: routing.trailingSlash must be "always", "never", or "preserve".');
+    }
+    config.routing = candidate.routing;
+  }
   if (candidate.diagnostics !== undefined) {
     config.diagnostics = candidate.diagnostics;
   }

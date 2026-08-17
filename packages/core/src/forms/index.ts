@@ -1,5 +1,6 @@
 import { createAction, type Action, type ActionState } from "../actions/index.js";
 import { getTavoBootMode } from "../auto-pages/bootstrap.js";
+import { getActivePagesRuntime } from "../auto-pages/state.js";
 import { createStore, type Store } from "../store/index.js";
 import type {
   FormAction,
@@ -167,7 +168,8 @@ export function createServerFormAction<TResult = unknown>(
       context
     );
     const body = await resolveServerFormBody(values, bodyOption, context);
-    const response = await submitter(url, {
+    const actionUrl = getActivePagesRuntime()?.router.canonicalize(url) ?? url;
+    const response = await submitter(actionUrl, {
       method: options.method ?? "POST",
       headers: resolveServerFormHeaders(options.headers, bodyOption),
       body,

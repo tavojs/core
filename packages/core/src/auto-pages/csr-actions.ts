@@ -7,6 +7,7 @@ type Navigate = (to: string, options?: RouterNavigateOptions) => void;
 
 let activeCsrActions: CsrActionsOptions | null = null;
 let activeNavigate: Navigate | null = null;
+let activeCanonicalize: ((to: string) => string) | null = null;
 let formInterceptorDocument: Document | null = null;
 let warnedMissingCsrActions = false;
 
@@ -80,7 +81,8 @@ function resolveActionTarget(to: string, search?: string): { pathname: string; s
 
 /** Resolves a route action target through the active CSR action mapping, when enabled. */
 export function resolveTavoActionUrl(to: string, options?: ResolveTavoActionUrlOptions): string {
-  const target = resolveActionTarget(to, options?.search);
+  const canonical = activeCanonicalize?.(to) ?? to;
+  const target = resolveActionTarget(canonical, options?.search);
   if (typeof window === "undefined" || typeof document === "undefined") {
     return `${target.pathname}${target.search}`;
   }
@@ -165,14 +167,20 @@ function handleCsrActionRedirect(redirect: string): void {
   window.location.href = redirect;
 }
 
-export function configureCsrActions(csrActions: CsrActionsOptions | undefined, navigate: Navigate): void {
+export function configureCsrActions(
+  csrActions: CsrActionsOptions | undefined,
+  navigate: Navigate,
+  canonicalize?: (to: string) => string,
+): void {
   activeCsrActions = csrActions ?? null;
   activeNavigate = navigate;
+  activeCanonicalize = canonicalize ?? null;
 }
 
 export function resetCsrActions(): void {
   activeCsrActions = null;
   activeNavigate = null;
+  activeCanonicalize = null;
   warnedMissingCsrActions = false;
 }
 
