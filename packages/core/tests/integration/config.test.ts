@@ -8,6 +8,12 @@ import {
   defineTavoViteConfig,
 } from "../../src/config/index.ts";
 import { loadTavoConfig } from "../../src/config/load.ts";
+import { applyPluginBuildConfig } from "../../src/config/plugin-build.ts";
+import {
+  TAVO_PLUGIN_API_VERSION,
+  definePlugin,
+  definePluginPhase,
+} from "../../src/plugins/index.ts";
 
 type VitePluginLike = {
   name: string;
@@ -38,6 +44,32 @@ function transformedCode(result: unknown, fallback: string): string {
 const configModulePath = fileURLToPath(
   new URL("../../src/config/index.ts", import.meta.url),
 );
+
+test("build plugin setup receives the resolved URL policy", async () => {
+  const seen: string[] = [];
+  const plugin = definePlugin({
+    id: "@acme/sitemap",
+    version: "1.0.0",
+    apiVersion: TAVO_PLUGIN_API_VERSION,
+    manifest: { build: { plugins: [{ id: "sitemap" }] } },
+    build: () => definePluginPhase({
+      build: { plugins: { sitemap: { name: "sitemap" } } },
+      setup(context) {
+        seen.push(`${context.urlPolicy.trailingSlash}:${context.urlPolicy.canonicalize("/docs?q=1#top")}`);
+      },
+    }),
+  });
+
+  for (const trailingSlash of ["always", "never", "preserve"] as const) {
+    await applyPluginBuildConfig({}, [plugin], { routing: { trailingSlash } });
+  }
+
+  assert.deepEqual(seen, [
+    "always:/docs/?q=1#top",
+    "never:/docs?q=1#top",
+    "preserve:/docs?q=1#top",
+  ]);
+});
 
 function definedConfigSource(
   objectSource = "{}",

@@ -38,6 +38,14 @@ function createClientLoadRequest(pathname: string, signal?: AbortSignal): Reques
   }
 }
 
+function routePathnameFromTarget(target: string): string {
+  try {
+    return new URL(target || "/", typeof window === "undefined" ? "http://tavo.local/" : window.location.href).pathname || "/";
+  } catch {
+    return target.split(/[?#]/, 1)[0] || "/";
+  }
+}
+
 export function createAutoPagesRuntimeStateInternal(
   props: AutoPagesAppProps | undefined,
   discoverPagesModules: DiscoverPagesModules
@@ -50,7 +58,8 @@ export function createAutoPagesRuntimeStateInternal(
     middleware: props?.middleware,
     allowExternalRedirects: props?.allowExternalRedirects,
     i18n: props?.i18n,
-    plugins: props?.plugins
+    plugins: props?.plugins,
+    routing: props?.routing
   });
 
   const initialResolved = (() => {
@@ -94,6 +103,8 @@ export function createAutoPagesRuntimeStateInternal(
       fromPath?: string,
       options?: { prefetch?: boolean; signal?: AbortSignal }
     ): Promise<void> => {
+      const requestTarget = pathname;
+      pathname = routePathnameFromTarget(pathname);
       const resolutionKey = `${options?.prefetch ? "prefetch" : "navigate"}:${fromPath ?? ""}:${pathname}`;
       const pendingResolution = pendingResolutions.get(resolutionKey);
       if (pendingResolution) {
@@ -147,7 +158,7 @@ export function createAutoPagesRuntimeStateInternal(
         try {
           const resolved = await runtime.resolvePathAsync(
             pathname,
-            createClientLoadRequest(pathname, controller.signal),
+            createClientLoadRequest(requestTarget, controller.signal),
             fromPath,
             options?.prefetch
               ? undefined

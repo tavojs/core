@@ -12,7 +12,7 @@ import { configureDevDiagnostics } from "../../src/dev.ts";
 import { defineServerOnly } from "../../src/server.ts";
 import { flushSync, startTransition } from "../../src/scheduler.ts";
 import { inspectTavoRuntime, installTavoDevtoolsPanel } from "../../src/devtools.ts";
-import { navigate } from "../../src/router/index.ts";
+import { navigate, prefetchRoute } from "../../src/router/index.ts";
 import {
   createPagesRuntime,
   defineMiddleware,
@@ -234,6 +234,52 @@ test("bootTavo preserves a static SSR page when hydrating a trailing-slash URL",
     assert.equal(dom.window.document.querySelector("h1")?.textContent, "Documentation");
     assert.equal(docsLoads, 1);
     assert.equal(notFoundLoads, 0);
+  } finally {
+    clearDom();
+  }
+});
+
+test("bootTavo canonicalizes a noncanonical hydration URL before resolving loaders", async () => {
+  let loads = 0;
+  const modules = {
+    "/src/pages/docs/index.tsx": {
+      load: () => { loads += 1; return null; },
+      default: () => h("main", null, h("h1", null, "Canonical docs"))
+    }
+  };
+  const response = await renderPagesResponseAsync(modules, "/docs", {
+    routing: { trailingSlash: "never" }
+  });
+  assert.equal(loads, 1);
+  const dom = setupDom(response.html, { url: "http://localhost/docs/" });
+  try {
+    const result = await bootTavo({ modules, routing: { trailingSlash: "never" } });
+    assert.equal(result.mode, "client");
+    await waitFor(() => dom.window.location.pathname === "/docs");
+    assert.equal(dom.window.document.querySelector("h1")?.textContent, "Canonical docs");
+    assert.equal(loads, 1);
+  } finally {
+    clearDom();
+  }
+});
+
+test("prefetching canonicalizes known routes and retains the request query", async () => {
+  let prefetchedUrl = "";
+  const modules = {
+    "/src/pages/index.tsx": { default: () => h("main", null, "Home") },
+    "/src/pages/about.tsx": {
+      load: ({ url }: { url: URL }) => { prefetchedUrl = url.toString(); return null; },
+      default: () => h("main", null, "About")
+    }
+  };
+  const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`, {
+    url: "http://localhost/"
+  });
+  try {
+    await bootTavo({ modules, routing: { trailingSlash: "always" } });
+    await prefetchRoute("/about?source=nav#details");
+    assert.equal(prefetchedUrl, "http://localhost/about/?source=nav#details");
+    assert.equal(dom.window.location.pathname, "/");
   } finally {
     clearDom();
   }

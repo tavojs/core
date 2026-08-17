@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { canonicalizeTrailingSlash } from "@tavojs/core/router";
 import { ARTIFACT_SCHEMA_VERSION, GENERATED_DIR, PAGE_FILE_EXT } from "../constants.mjs";
 import { fileExists, readFilesRecursive } from "../utils/fs.mjs";
 import { normalizeModuleId, normalizePathname, toPosixPath } from "../utils/path.mjs";
@@ -14,6 +15,94 @@ export type ParsedPageFile = {
   dirParts: string[];
   fileStem: string;
 };
+
+function routePatternMatches(pattern: string, pathname: string): boolean {
+  const route = normalizePathname(pattern).split("/").filter(Boolean);
+  const pathParts = normalizePathname(pathname).split("/").filter(Boolean);
+  const visit = (routeIndex: number, pathIndex: number): boolean => {
+    if (routeIndex === route.length) return pathIndex === pathParts.length;
+    const segment = route[routeIndex]!;
+    if (segment.startsWith("*?")) {
+      for (let end = pathParts.length; end >= pathIndex; end -= 1) if (visit(routeIndex + 1, end)) return true;
+      return false;
+    }
+    if (segment.startsWith("*")) {
+      for (let end = pathParts.length; end > pathIndex; end -= 1) if (visit(routeIndex + 1, end)) return true;
+      return false;
+    }
+    if (segment.startsWith(":?")) return visit(routeIndex + 1, pathIndex + 1) || visit(routeIndex + 1, pathIndex);
+    if (pathIndex >= pathParts.length) return false;
+    return (segment.startsWith(":") || segment === pathParts[pathIndex]) && visit(routeIndex + 1, pathIndex + 1);
+  };
+  return visit(0, 0);
+}
+
+function trustedLinkReferences(source: string): Set<string> {
+  const references = new Set<string>();
+  const trustedPackage = /^@tavojs\/(?:core|ui)(?:\/.*)?$/;
+  const namedImport = /\bimport\s*\{([\s\S]*?)\}\s*from\s*["']([^"']+)["']/g;
+  for (const match of source.matchAll(namedImport)) {
+    if (!trustedPackage.test(match[2]!)) continue;
+    for (const specifier of match[1]!.split(",")) {
+      const parts = specifier.trim().match(/^Link(?:\s+as\s+([A-Za-z_$][\w$]*))?$/);
+      if (parts) references.add(parts[1] ?? "Link");
+    }
+  }
+  const namespaceImport = /\bimport\s*\*\s*as\s*([A-Za-z_$][\w$]*)\s*from\s*["']([^"']+)["']/g;
+  for (const match of source.matchAll(namespaceImport)) {
+    if (trustedPackage.test(match[2]!)) references.add(`${match[1]}.Link`);
+  }
+  return references;
+}
+
+function isRouterCanonicalizedElement(
+  tag: string,
+  attributes: string,
+  trustedLinks: Set<string>,
+): boolean {
+  if (trustedLinks.has(tag)) return true;
+  const polymorphic = attributes.match(/\bas\s*=\s*\{\s*([A-Za-z_$][\w$]*(?:\.Link)?)\s*\}/);
+  return Boolean(polymorphic && trustedLinks.has(polymorphic[1]!));
+}
+
+/** Finds literal links that will reach an anchor without router URL canonicalization. */
+export async function collectTrailingSlashLinkDiagnostics(
+  rootDir: string,
+  routes: PageRoute[],
+  policy: "always" | "never" | "preserve",
+): Promise<string[]> {
+  if (policy === "preserve") return [];
+  const sourceRoot = path.join(rootDir, "src");
+  if (!(await fileExists(sourceRoot))) return [];
+  const files = (await readFilesRecursive(sourceRoot)).filter((file) => /\.[cm]?[jt]sx?$/.test(file));
+  const diagnostics: string[] = [];
+  for (const file of files) {
+    const source = await fs.readFile(file, "utf8");
+    const trustedLinks = trustedLinkReferences(source);
+    const elementPattern = /<([A-Za-z_$][\w$:.-]*)(\s[\s\S]*?)?\/?\s*>/g;
+    for (const element of source.matchAll(elementPattern)) {
+      const tag = element[1]!;
+      const attributes = element[2] ?? "";
+      if (isRouterCanonicalizedElement(tag, attributes, trustedLinks)) continue;
+      const linkPattern = /\b(?:href|to|action)\s*=\s*["'](\/[^"']*)["']/g;
+      for (const match of attributes.matchAll(linkPattern)) {
+        const value = match[1]!;
+        const pathname = value.split(/[?#]/, 1)[0] || "/";
+        if (pathname === "/" || !routes.some((route) => routePatternMatches(route.path, pathname))) continue;
+        const canonical = canonicalizeTrailingSlash(value, policy);
+        if (canonical === value) continue;
+        const attributeOffset = element[0].indexOf(attributes);
+        const absoluteIndex = (element.index ?? 0) + attributeOffset + (match.index ?? 0);
+        const line = source.slice(0, absoluteIndex).split("\n").length;
+        diagnostics.push(
+          `${toPosixPath(path.relative(rootDir, file))}:${line} internal route link ${JSON.stringify(value)} `
+          + `does not match routing.trailingSlash=${JSON.stringify(policy)}; use ${JSON.stringify(canonical)}.`,
+        );
+      }
+    }
+  }
+  return diagnostics;
+}
 
 export function parsePageFile(file: string): ParsedPageFile {
   const normalized = normalizeModuleId(file);
@@ -168,13 +257,18 @@ export function paramsTypeFromRoutePath(pathname: string): string {
   return `{ ${entries.map(([key, type]) => `${JSON.stringify(key)}: ${type}`).join("; ")} }`;
 }
 
-export async function generateRouteArtifacts(rootDir: string, routes: PageRoute[]): Promise<void> {
+export async function generateRouteArtifacts(
+  rootDir: string,
+  routes: PageRoute[],
+  trailingSlash: "always" | "never" | "preserve" = "preserve",
+): Promise<void> {
   const generatedRoot = path.join(rootDir, GENERATED_DIR);
   await fs.mkdir(generatedRoot, { recursive: true });
 
   const manifest = {
     schemaVersion: ARTIFACT_SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
+    routing: { trailingSlash },
     routes: routes.map((route) => ({
       path: route.path,
       file: toPosixPath(path.relative(rootDir, route.file)),

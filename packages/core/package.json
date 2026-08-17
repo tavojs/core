@@ -1,6 +1,6 @@
 {
   "name": "@tavojs/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A lightweight TSX framework with file-based routing, SSR, MVC components, and realtime stores.",
   "type": "module",
   "author": "Hrachya Martirosyan",
@@ -78,8 +78,8 @@
     "clean": "rm -rf dist",
     "dev": "tsx watch src/index.tsx",
     "test:integration": "node --test --import tsx tests/integration/*.test.ts",
-    "prepublishOnly": "npm run clean && npm run build && npm run test:integration",
-    "prepare": "npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build && npm run test:integration"
   },
   "keywords": [
     "tavo",

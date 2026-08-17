@@ -110,7 +110,21 @@ function isPromiseLike(value: unknown): value is Promise<TavoViteConfig> {
 async function withTavoPluginViteConfig<T extends TavoViteConfig>(config: T, env: TavoViteConfigEnv): Promise<T> {
   const root = typeof config.root === "string" ? config.root : ".";
   const tavoConfig = await loadTavoConfig(root, { mode: env.mode });
-  return applyPluginBuildConfig(config, tavoConfig.plugins);
+  const resolved = await applyPluginBuildConfig(config, tavoConfig.plugins, {
+    routing: tavoConfig.routing,
+  });
+  const define = resolved.define && typeof resolved.define === "object"
+    ? resolved.define as Record<string, unknown>
+    : {};
+  return {
+    ...resolved,
+    define: {
+      ...define,
+      "__TAVO_TRAILING_SLASH__": JSON.stringify(
+        tavoConfig.routing?.trailingSlash ?? "preserve",
+      ),
+    },
+  } as T;
 }
 
 /** Applies Tavo.js's JSX runtime settings to a plain Vite config object. */

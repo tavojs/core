@@ -14,6 +14,7 @@ import type {
   TavoPluginManifest,
   TavoPluginPhase,
 } from "./types.js";
+import type { ResolvedUrlPolicy } from "../router/url-policy.js";
 
 export function unwrapPhase(
   value: TavoPluginPhase | { default: TavoPluginPhase },
@@ -76,6 +77,7 @@ export function routePathToFile(owner: string, path: string): string {
 }
 
 export type RuntimeState = {
+  urlPolicy: ResolvedUrlPolicy;
   values: Map<string, unknown>;
   requestFactories: Map<string, (context: any) => unknown>;
   phases: Map<string, TavoPluginPhase>;

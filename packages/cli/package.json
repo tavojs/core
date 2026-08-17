@@ -1,6 +1,6 @@
 {
   "name": "@tavojs/cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI for creating, building, inspecting, and previewing Tavo.js apps.",
   "type": "module",
   "author": "Hrachya Martirosyan",
@@ -37,14 +37,13 @@
     "eval:offline": "npm run build && node evals/offline.mjs",
     "eval:live": "npm run build && node evals/live-runner.mjs",
     "prepack": "npm run build",
-    "prepublishOnly": "npm test",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm test"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
   "dependencies": {
-    "@tavojs/core": "^1.0.2"
+    "@tavojs/core": "^1.0.3"
   },
   "keywords": [
     "tavo",

@@ -32,6 +32,7 @@ import type {
   SsrStaticCacheEntry
 } from "./types.js";
 import { normalizeCanonicalOrigin } from "./origin.js";
+import { canonicalPageRedirect, canonicalizeActionRedirect } from "./canonical.js";
 
 function cloneCachedResponse(entry: SsrStaticCacheEntry) {
   return {
@@ -363,13 +364,18 @@ export function createNodeRequestHandler(
       await writeFetchResponseToNodeResponse(withDefaultFetchSecurityHeaders(pluginResponse), res);
       return;
     }
+    const canonicalRedirect = canonicalPageRedirect(runtime, url);
+    if (canonicalRedirect) {
+      await writeFetchResponseToNodeResponse(canonicalRedirect, res);
+      return;
+    }
     if (!isPageRenderMethod(req.method)) {
       const actionResponse = await runtime.handleAction(url.pathname, {
         request: fetchRequest,
         rawRequest: req
       });
       if (actionResponse) {
-        await writeFetchResponseToNodeResponse(actionResponse, res);
+        await writeFetchResponseToNodeResponse(canonicalizeActionRedirect(actionResponse, runtime, url), res);
         return;
       }
       await writeMethodNotAllowedResponse(res);
@@ -438,9 +444,13 @@ export function createFetchRequestHandler(options: FetchHandlerOptions) {
     if (pluginResponse) {
       return withDefaultFetchSecurityHeaders(pluginResponse);
     }
+    const canonicalRedirect = canonicalPageRedirect(runtime, url);
+    if (canonicalRedirect) return canonicalRedirect;
     if (!isPageRenderMethod(request.method)) {
       const actionResponse = await runtime.handleAction(url.pathname, request);
-      return actionResponse ?? methodNotAllowedResponse();
+      return actionResponse
+        ? canonicalizeActionRedirect(actionResponse, runtime, url)
+        : methodNotAllowedResponse();
     }
     if (options.stream) {
       const response = await renderPagesStreamResponseFromRuntimeAsync(runtime, url.pathname, {

@@ -1,5 +1,11 @@
 # @tavojs/core
 
+## 1.0.3
+
+### Patch Changes
+
+- Apply `routing.trailingSlash` consistently across SSR, CSR, prerendering, redirects, forms, plugins, generated production servers, and route-aware links. Preserve external and scheme-based Link destinations during SSR localization, and report only actionable noncanonical links while validating prerendered HTML.
+
 ## 1.0.2
 
 ### Patch Changes

@@ -154,6 +154,7 @@ export async function startViteAutoPagesDevServer(
   } = {
     ...(tavoConfig.ssr ?? {}),
     plugins: tavoConfig.plugins,
+    routing: tavoConfig.routing,
   };
   const pagesDir = options?.pagesDir ?? tavoConfig.pagesDir ?? "src/pages";
   const cssHrefs = await resolveCssEntries(

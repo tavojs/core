@@ -1,6 +1,7 @@
 import { escapeTemplateLiteral } from "../utils/format.mjs";
 import { toPosixPath } from "../utils/path.mjs";
 import type { ClientAssetPlan } from "../types.mjs";
+import { createPreviewRoutingSource } from "./preview-routing-template.mjs";
 
 export const BUILD_CONFIG_GLOBAL_KEY = "@tavojs/core/config/build-value";
 
@@ -48,6 +49,7 @@ export function createSsrEntrySource({ pagesDir, assetPlan }: { pagesDir: string
     "  ...resolvedOptions,",
     "  modules: resolvedOptions.modules ?? modules,",
     "  plugins: loadedConfig.plugins,",
+    "  routing: loadedConfig.routing,",
     "  __tavoProductionAssets: productionAssets,",
     "  document: {",
     "    ...(resolvedOptions.document ?? {}),",
@@ -126,9 +128,10 @@ export function createSsrEntrySource({ pagesDir, assetPlan }: { pagesDir: string
     "      for (const params of paramsList ?? []) {",
     "        const pathname = buildStaticPath(route.path, params ?? {});",
     "        if (pathname) {",
-    "          const response = await renderPagesResponseFromRuntimeAsync(runtime, pathname, options);",
+    "          const canonicalPathname = runtime.router.canonicalize(pathname);",
+    "          const response = await renderPagesResponseFromRuntimeAsync(runtime, canonicalPathname, options);",
     "          if (!response.redirect && response.status < 400) {",
-    "            entries.push({ pathname, html: response.html, status: response.status });",
+    "            entries.push({ pathname: canonicalPathname, html: response.html, status: response.status });",
     "          } else {",
     "            diagnostics.push(`Skipped ${pathname}: prerender returned status ${response.status}.`);",
     "          }",
@@ -136,9 +139,10 @@ export function createSsrEntrySource({ pagesDir, assetPlan }: { pagesDir: string
     "      }",
     "      continue;",
     "    }",
-    "    const response = await renderPagesResponseFromRuntimeAsync(runtime, route.path, options);",
+    "    const canonicalPathname = runtime.router.canonicalize(route.path);",
+    "    const response = await renderPagesResponseFromRuntimeAsync(runtime, canonicalPathname, options);",
     "    if (!response.redirect && response.status < 400) {",
-    "      entries.push({ pathname: route.path, html: response.html, status: response.status });",
+    "      entries.push({ pathname: canonicalPathname, html: response.html, status: response.status });",
     "    } else {",
     "      diagnostics.push(`Skipped ${route.path}: prerender returned status ${response.status}.`);",
     "    }",
@@ -165,7 +169,18 @@ export function createSsrEntrySource({ pagesDir, assetPlan }: { pagesDir: string
   ].join("\n");
 }
 
-export function createPreviewServerSource(): string {
+export function createPreviewServerSource(options: {
+  routes?: readonly string[];
+  endpoints?: readonly {
+    methods: readonly string[];
+    kind: "exact" | "subtree";
+    path: string;
+  }[];
+  trailingSlash?: "always" | "never" | "preserve";
+} = {}): string {
+  const routes = options.routes ?? [];
+  const endpoints = options.endpoints ?? [];
+  const trailingSlash = options.trailingSlash ?? "preserve";
   return [
     'import fs from "node:fs/promises";',
     'import os from "node:os";',
@@ -183,6 +198,7 @@ export function createPreviewServerSource(): string {
     'const host = process.env.HOST || "127.0.0.1";',
     'const port = Number(process.env.PORT || 4174);',
     'const monitorToken = process.env.TAVO_MONITOR_TOKEN || "";',
+    ...createPreviewRoutingSource({ routes, endpoints, trailingSlash }),
     'const serverUrl = `http://${host}:${port}`;',
     "const startedAt = Date.now();",
     "const securityHeaders = { \"X-Content-Type-Options\": \"nosniff\", \"Referrer-Policy\": \"strict-origin-when-cross-origin\", \"Permissions-Policy\": \"camera=(), microphone=(), geolocation=()\", \"X-Frame-Options\": \"SAMEORIGIN\" };",
@@ -249,19 +265,16 @@ export function createPreviewServerSource(): string {
     "  }",
     "  return out;",
     "}",
-    "function resolveAssetPaths(url) {",
-    "  const segments = safePathSegments(url.pathname);",
+    "function resolveClientPath(pathname, indexFile = false) {",
+    "  const segments = safePathSegments(pathname);",
     "  if (!segments) {",
-    "    return [];",
+    "    return null;",
     "  }",
-    "  if (segments.length === 0) {",
-    "    return [];",
+    "  if (segments.length === 0 && !indexFile) {",
+    "    return null;",
     "  }",
-    "  const candidates = [",
-    "    path.resolve(clientRoot, ...segments),",
-    "    path.resolve(clientRoot, ...segments, \"index.html\")",
-    "  ];",
-    "  return candidates.filter((resolved) => resolved === clientRoot || resolved.startsWith(`${clientRoot}${path.sep}`));",
+    "  const resolved = path.resolve(clientRoot, ...segments, ...(indexFile ? [\"index.html\"] : []));",
+    "  return resolved === clientRoot || resolved.startsWith(`${clientRoot}${path.sep}`) ? resolved : null;",
     "}",
     "function collectMonitorPayload() {",
     "  const memory = process.memoryUsage();",
@@ -302,9 +315,9 @@ export function createPreviewServerSource(): string {
     "  monitorState.lastRequestAt = Date.now();",
     "  monitorState.routeHits[url.pathname] = (monitorState.routeHits[url.pathname] ?? 0) + 1;",
     "  const started = Date.now();",
-    "  const assetPaths = resolveAssetPaths(url);",
+    "  const assetPath = resolveClientPath(url.pathname);",
     "  try {",
-    "    for (const assetPath of assetPaths) {",
+    "    if (assetPath) {",
     "      const stat = await fs.stat(assetPath).catch(() => null);",
     "      if (stat?.isFile()) {",
     "        const body = await fs.readFile(assetPath);",
@@ -314,6 +327,33 @@ export function createPreviewServerSource(): string {
     "          ...securityHeaders,",
     "          \"Content-Type\": contentTypeForFilePath(assetPath),",
     "          \"Cache-Control\": cacheControlForFilePath(assetPath),",
+    "          \"Content-Length\": String(body.byteLength)",
+    "        });",
+    "        res.end(body);",
+    "        monitorState.inflight -= 1;",
+    "        return;",
+    "      }",
+    "    }",
+    "  } catch {}",
+    "  const canonicalLocation = canonicalPageLocation(url, req.method || \"GET\");",
+    "  if (canonicalLocation) {",
+    "    res.writeHead(308, { ...securityHeaders, Location: canonicalLocation });",
+    "    res.end();",
+    "    monitorState.inflight -= 1;",
+    "    return;",
+    "  }",
+    "  const routeIndexPath = resolveClientPath(url.pathname, true);",
+    "  try {",
+    "    if (routeIndexPath) {",
+    "      const stat = await fs.stat(routeIndexPath).catch(() => null);",
+    "      if (stat?.isFile()) {",
+    "        const body = await fs.readFile(routeIndexPath);",
+    "        monitorState.staticAssetHits += 1;",
+    "        monitorState.lastRenderDurationMs = 0;",
+    "        res.writeHead(200, {",
+    "          ...securityHeaders,",
+    "          \"Content-Type\": contentTypeForFilePath(routeIndexPath),",
+    "          \"Cache-Control\": cacheControlForFilePath(routeIndexPath),",
     "          \"Content-Length\": String(body.byteLength)",
     "        });",
     "        res.end(body);",

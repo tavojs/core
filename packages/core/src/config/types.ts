@@ -1,5 +1,6 @@
 import type { NodeHandlerOptions } from "../ssr/index.js";
 import type { TavoPluginInput } from "../plugins/index.js";
+import type { TrailingSlashPolicy } from "../router/url-policy.js";
 
 export type ViteEsbuildOptions = Record<string, unknown> & {
   jsx?: string;
@@ -26,6 +27,9 @@ export type TavoConfig = {
   pagesDir?: string;
   cssEntries?: string[];
   plugins?: TavoPluginInput;
+  routing?: {
+    trailingSlash?: TrailingSlashPolicy;
+  };
   diagnostics?: {
     devOverlay?: boolean;
     traces?: boolean;

@@ -10,6 +10,8 @@ import {
   prepareRouterScrollNavigation
 } from "./scroll.js";
 import type { RouteConfig, Router, RouterNavigateOptions } from "./types.js";
+import type { CreateRouterOptions } from "./types.js";
+import { resolveUrlPolicy } from "./url-policy.js";
 
 const DYNAMIC_ROUTE_INDEX_THRESHOLD = 16;
 
@@ -20,7 +22,8 @@ function createRouterPopStateEvent(): Event {
 }
 
 /** Creates a client router with history navigation and pattern matching. */
-export function createRouter(routes: RouteConfig[]): Router {
+export function createRouter(routes: RouteConfig[], options: CreateRouterOptions = {}): Router {
+  const urlPolicy = resolveUrlPolicy(options.routing);
   const staticRoutes = new Map<string, RouteConfig>();
   const normalizedRoutes = routes.map((route, order) => ({
     ...route,
@@ -51,31 +54,11 @@ export function createRouter(routes: RouteConfig[]): Router {
     else dynamicRoutesByPrefix.set(prefix, [route]);
   }
 
-  return {
-    navigate(to: string, options?: RouterNavigateOptions): void {
-      if (typeof window === "undefined") {
-        return;
-      }
-      const pathname = normalizePath(to);
-      prepareRouterScrollNavigation(to, options);
-      const state = createRouterHistoryState(options);
-      if (options?.replace) {
-        window.history.replaceState(state, "", pathname);
-      } else {
-        window.history.pushState(state, "", pathname);
-      }
-      window.dispatchEvent(createRouterPopStateEvent());
-    },
-    getPathname(): string {
-      return resolvePathname();
-    },
-    match(pathname: string) {
-      const normalizedPath = normalizePath(pathname);
+  const matchRoute = (pathname: string) => {
+      const publicPath = options.resolveRoutePathname?.(pathname) ?? pathname;
+      const normalizedPath = normalizePath(publicPath);
       const staticRoute = staticRoutes.get(normalizedPath);
-      if (staticRoute) {
-        return { route: staticRoute, params: {} };
-      }
-
+      if (staticRoute) return { route: staticRoute, params: {} };
       const pathParts = normalizedPath.split("/").filter(Boolean);
       if (dynamicRoutes.length < DYNAMIC_ROUTE_INDEX_THRESHOLD) {
         for (const route of dynamicRoutes) {
@@ -94,11 +77,49 @@ export function createRouter(routes: RouteConfig[]): Router {
       if (candidates.length > 1) candidates.sort((left, right) => left.order - right.order);
       for (const route of candidates) {
         const params = matchCompiledPatternSegments(route.compiled, pathParts);
-        if (params) {
-          return { route, params };
-        }
+        if (params) return { route, params };
       }
       return { route: null, params: {} };
+  };
+
+  const canonicalize = (to: string): string => {
+    if (urlPolicy.trailingSlash === "preserve" || !to || to.startsWith("#") || to.startsWith("?")) return to;
+    if (typeof window === "undefined" && (/^[a-z][a-z\d+.-]*:\/\//i.test(to) || to.startsWith("//"))) return to;
+    let pathname: string;
+    try {
+      const base = typeof window === "undefined" ? "http://tavo.local/" : window.location.href;
+      const url = new URL(to, base);
+      if (typeof window !== "undefined" && url.origin !== window.location.origin) return to;
+      pathname = url.pathname || "/";
+    } catch {
+      const [path] = to.split(/[?#]/, 1);
+      pathname = path || "/";
+    }
+    return matchRoute(pathname).route ? urlPolicy.canonicalize(to) : to;
+  };
+
+  return {
+    urlPolicy,
+    canonicalize,
+    navigate(to: string, options?: RouterNavigateOptions): void {
+      if (typeof window === "undefined") {
+        return;
+      }
+      const pathname = canonicalize(to);
+      prepareRouterScrollNavigation(pathname, options);
+      const state = createRouterHistoryState(options);
+      if (options?.replace) {
+        window.history.replaceState(state, "", pathname);
+      } else {
+        window.history.pushState(state, "", pathname);
+      }
+      window.dispatchEvent(createRouterPopStateEvent());
+    },
+    getPathname(): string {
+      return resolvePathname();
+    },
+    match(pathname: string) {
+      return matchRoute(pathname);
     }
   };
 }

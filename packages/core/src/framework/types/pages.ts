@@ -6,6 +6,7 @@ import type {
   TavoPluginRuntime,
 } from "../../plugins/types.js";
 import type { RouteConfig, Router, RouterParams } from "../../router/index.js";
+import type { TrailingSlashPolicy } from "../../router/url-policy.js";
 import type { ResponseHeaders } from "../../ssr/headers.js";
 import type { Store } from "../../store/index.js";
 
@@ -247,6 +248,7 @@ export type PagesManifest = {
 export type RoutesCatalogState = { routes: PageRouteDefinition[] };
 
 export type PageRuntimeOptions = {
+  routing?: { trailingSlash?: TrailingSlashPolicy };
   getPageProps?: () => AnyRecord;
   notFound?: Component<{ pathname: string }>;
   csrFallback?:

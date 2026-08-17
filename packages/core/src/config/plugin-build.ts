@@ -1,10 +1,13 @@
 import { TavoError } from "../diagnostics.js";
 import { compilePluginGraph } from "../plugins/compiler.js";
 import type {
+  PluginCompileOptions,
+  PluginResolveContext,
   TavoPluginInput,
   TavoPluginPhase,
 } from "../plugins/types.js";
 import type { TavoViteConfig } from "./types.js";
+import { resolveUrlPolicy } from "../router/url-policy.js";
 
 function orderPluginBuildItems(
   items: readonly {
@@ -51,8 +54,10 @@ function appAllows(
 export async function applyPluginBuildConfig<T extends TavoViteConfig>(
   config: T,
   plugins?: TavoPluginInput,
+  options?: PluginCompileOptions,
 ): Promise<T> {
   const graph = compilePluginGraph(plugins);
+  const urlPolicy = resolveUrlPolicy(options?.routing);
   const aliases = Object.fromEntries(
     Array.from(graph.buildAliases, ([key, contribution]) => [
       key,
@@ -92,6 +97,20 @@ export async function applyPluginBuildConfig<T extends TavoViteConfig>(
         );
       }
     }
+    const context: PluginResolveContext = {
+      instanceId: item.instanceId,
+      urlPolicy,
+      resolve() {
+        throw new TavoError(
+          "TAVO_PLUGIN_008",
+          `Build phase for plugin "${item.owner}" cannot resolve runtime capabilities.`,
+        );
+      },
+      tryResolve() {
+        return undefined;
+      },
+    };
+    await phase.setup?.(context);
   }
 
   const currentResolve =

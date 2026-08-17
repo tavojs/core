@@ -191,6 +191,8 @@ export const RouterProvider = createTavo<RouterProviderProps, RouterProviderMode
   }),
   controller: RouterProviderController,
   view: ({ props, state }) => {
+  // Make the router policy available while descendants are rendered on the server too.
+  setActiveRouterState(props.router, state.pathname);
   const hasChildren =
     Array.isArray(props.children) ? props.children.length > 0 : props.children !== undefined;
   const announcement = announceLabel(state.pathname, props.busy);
@@ -230,12 +232,17 @@ export const RouterProvider = createTavo<RouterProviderProps, RouterProviderMode
   }
 });
 
-export type LinkProps = {
+export type LinkProps = Record<string, unknown> & {
   to: string;
   replace?: boolean;
   scroll?: boolean;
   className?: ClassName;
   children?: Child;
+  target?: string;
+  rel?: string;
+  download?: string | boolean;
+  "aria-current"?: string | boolean;
+  onClick?: (event: MouseEvent) => void;
 };
 
 function resolveLinkUrl(to: string): URL | null {
@@ -259,11 +266,22 @@ function pathnameFromLinkTarget(to: string): string {
   return normalizePath(pathname || "/");
 }
 
-function shouldHandleLinkClick(event: MouseEvent, to: string): boolean {
+function shouldHandleLinkClick(
+  event: MouseEvent,
+  to: string,
+  target?: string,
+  download?: unknown,
+): boolean {
   if (event.defaultPrevented || event.button !== 0) {
     return false;
   }
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    return false;
+  }
+  if (target && target.toLowerCase() !== "_self") {
+    return false;
+  }
+  if (download !== undefined && download !== null && download !== false) {
     return false;
   }
   const url = resolveLinkUrl(to);
@@ -282,8 +300,13 @@ function getActiveI18nService(): AnyI18nService | undefined {
     : undefined;
 }
 
+function isNonRouteLinkTarget(to: string): boolean {
+  const value = to.trimStart();
+  return value.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(value);
+}
+
 function localizeLinkTarget(to: string, i18n: AnyI18nService | undefined): string {
-  if (!i18n || to.startsWith("#")) {
+  if (!i18n || to.startsWith("#") || isNonRouteLinkTarget(to)) {
     return to;
   }
   const url = resolveLinkUrl(to);
@@ -306,29 +329,49 @@ function resolveActivePath(pathname: string, i18n: AnyI18nService | undefined): 
 export const Link = createTavo<LinkProps, RouterState>({
   model: () => activeRouterStore,
   view: ({ props, state }) => {
+    const {
+      to,
+      replace,
+      scroll,
+      children,
+      onClick,
+      target,
+      download,
+      ...anchorProps
+    } = props;
     const i18n = getActiveI18nService();
-    const href = localizeLinkTarget(props.to, i18n);
+    const nonRouteTarget = isNonRouteLinkTarget(to);
+    const localizedHref = nonRouteTarget ? to : localizeLinkTarget(to, i18n);
+    const href = nonRouteTarget
+      ? to
+      : state.router?.canonicalize(localizedHref) ?? localizedHref;
     const currentPath = resolveActivePath(state.pathname, i18n);
     const targetPath = resolveActivePath(pathnameFromLinkTarget(href), i18n);
+    const ariaCurrent = Object.prototype.hasOwnProperty.call(props, "aria-current")
+      ? props["aria-current"]
+      : currentPath === targetPath ? "page" : undefined;
     return h(
       "a",
       {
+        ...anchorProps,
         href,
-        className: props.className,
-        "aria-current": currentPath === targetPath ? "page" : undefined,
+        target,
+        download,
+        "aria-current": ariaCurrent,
         onClick(event: MouseEvent) {
-          if (!state.router || !shouldHandleLinkClick(event, href)) {
+          onClick?.(event);
+          if (!state.router || !shouldHandleLinkClick(event, href, target, download)) {
             return;
           }
           event.preventDefault();
           const url = resolveLinkUrl(href);
           state.router.navigate(url ? `${url.pathname}${url.search}${url.hash}` : href, {
-            replace: props.replace,
-            scroll: props.scroll
+            replace,
+            scroll
           });
         }
       },
-      props.children
+      children
     );
   }
 });

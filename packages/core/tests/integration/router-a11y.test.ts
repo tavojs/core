@@ -99,6 +99,21 @@ test("router: Link marks the active route with aria-current", async () => {
   clearDom();
 });
 
+test("router: CSR navigation writes canonical history while preserving search and hash", () => {
+  const dom = setupDom(`<!doctype html><html><body></body></html>`);
+  try {
+    const router = createRouter([
+      { path: "/about", component: () => null }
+    ], { routing: { trailingSlash: "always" } });
+    router.navigate("/about?tab=team#people");
+    assert.equal(dom.window.location.pathname, "/about/");
+    assert.equal(dom.window.location.search, "?tab=team");
+    assert.equal(dom.window.location.hash, "#people");
+  } finally {
+    clearDom();
+  }
+});
+
 test("router: Link treats search and hash targets as active for the current pathname", async () => {
   const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`, "http://example.com/docs?tab=intro");
   const app = dom.window.document.getElementById("app");
@@ -141,6 +156,107 @@ test("router: Link handles delegated internal clicks", async () => {
   assert.equal(dom.window.location.search, "?tab=team");
   assert.equal(dom.window.location.hash, "#intro");
   clearDom();
+});
+
+test("router: Link lets onClick prevent client navigation", async () => {
+  const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`);
+  const app = dom.window.document.getElementById("app");
+  assert.ok(app);
+  let clicks = 0;
+  const router = createRouter([{ path: "/about", component: () => null }]);
+  const root = createRoot(app);
+  root.render(h(RouterProvider, {
+    router,
+    children: h(Link, {
+      to: "/about",
+      className: "prevented-link",
+      onClick(event: MouseEvent) {
+        clicks += 1;
+        event.preventDefault();
+      },
+    }, "About"),
+  }));
+
+  await Promise.resolve();
+  const event = new dom.window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+  app.querySelector(".prevented-link")?.dispatchEvent(event);
+  assert.equal(clicks, 1);
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(dom.window.location.pathname, "/");
+  clearDom();
+});
+
+test("router: Link does not intercept external, scheme, target, download, or modified links", async () => {
+  const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`);
+  const app = dom.window.document.getElementById("app");
+  assert.ok(app);
+  const router = createRouter([{ path: "/about", component: () => null }]);
+  let navigations = 0;
+  const navigate = router.navigate;
+  router.navigate = (...args) => {
+    navigations += 1;
+    navigate(...args);
+  };
+  const root = createRoot(app);
+  root.render(h(RouterProvider, {
+    router,
+    children: [
+      h(Link, { to: "https://other.example/about", className: "external-link" }, "External"),
+      h(Link, { to: "mailto:support@example.com?subject=Help#message", className: "mail-link" }, "Email"),
+      h(Link, { to: "tel:+12025550123", className: "tel-link" }, "Phone"),
+      h(Link, { to: "webcal://calendar.example/events", className: "scheme-link" }, "Scheme"),
+      h(Link, { to: "//other.example/about?q=1#top", className: "protocol-relative-link" }, "Protocol relative"),
+      h(Link, { to: "/about", target: "_blank", className: "target-link" }, "Target"),
+      h(Link, { to: "/about", download: true, className: "download-link" }, "Download"),
+      h(Link, { to: "/about", className: "modified-link" }, "Modified"),
+    ],
+  }));
+
+  await Promise.resolve();
+  for (const selector of [
+    ".external-link",
+    ".mail-link",
+    ".tel-link",
+    ".scheme-link",
+    ".protocol-relative-link",
+    ".target-link",
+    ".download-link",
+    ".modified-link",
+  ]) {
+    const link = app.querySelector(selector);
+    link?.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    link?.dispatchEvent(new dom.window.MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+      ctrlKey: selector === ".modified-link",
+    }));
+  }
+  assert.equal(navigations, 0);
+  assert.equal(dom.window.location.pathname, "/");
+  clearDom();
+});
+
+test("router: Link hrefs apply always, never, and preserve policies in the browser", async () => {
+  for (const [policy, to, expected] of [
+    ["always", "/about?q=1#team", "/about/?q=1#team"],
+    ["never", "/about/?q=1#team", "/about?q=1#team"],
+    ["preserve", "/about/?q=1#team", "/about/?q=1#team"],
+  ] as const) {
+    const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`);
+    const app = dom.window.document.getElementById("app");
+    assert.ok(app);
+    const router = createRouter([
+      { path: "/about", component: () => null },
+    ], { routing: { trailingSlash: policy } });
+    createRoot(app).render(h(RouterProvider, {
+      router,
+      children: h(Link, { to, className: "policy-link" }, "About"),
+    }));
+    await Promise.resolve();
+    assert.equal(app.querySelector(".policy-link")?.getAttribute("href"), expected);
+    clearDom();
+  }
 });
 
 test("router: Link localizes internal hrefs with the active i18n locale", async () => {

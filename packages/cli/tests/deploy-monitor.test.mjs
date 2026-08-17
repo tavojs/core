@@ -105,7 +105,7 @@ test("generated preview server contains request failures instead of rethrowing",
 test("generated preview server caches fingerprinted assets and sizes buffered files", () => {
   const source = createPreviewServerSource();
 
-  assert.match(source, /if \(segments\.length === 0\) \{\s+return \[\];/);
+  assert.match(source, /if \(segments\.length === 0 && !indexFile\) \{\s+return null;/);
   assert.match(source, /public, max-age=31536000, immutable/);
   assert.match(source, /return segments\[0\] === "assets"/);
   assert.match(source, /: "no-cache"/);

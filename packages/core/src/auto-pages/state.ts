@@ -7,7 +7,7 @@ import type {
   PagesRuntimeResolved
 } from "../framework/types.js";
 import { createRouterHistoryState, prepareRouterScrollNavigation } from "../router/scroll.js";
-import type { RouterNavigateOptions } from "../router/index.js";
+import type { Router, RouterNavigateOptions } from "../router/index.js";
 import type {
   AutoPagesDocumentState,
   AutoPagesHydrationResolved,
@@ -78,9 +78,7 @@ const resolutionStore = createStore<ResolutionState>({
 });
 const routeStatusStore = createStore<RouteStatusState>({ byPath: {} });
 
-let activeRouter: {
-  navigate(to: string, options?: RouterNavigateOptions): void;
-} | null = null;
+let activeRouter: Router | null = null;
 let activeResolver: RuntimeContextValue | null = null;
 let activePagesRuntime: PagesRuntime | null = null;
 let routeListenerWindow: Window | null = null;
@@ -127,6 +125,13 @@ export function initializeAutoPagesClientState(): void {
 
 /** Synchronizes internal pathname store with browser location. */
 function syncPathnameFromLocation(): void {
+  if (activeRouter && typeof window !== "undefined") {
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const canonical = activeRouter.canonicalize(current);
+    if (canonical !== current) {
+      window.history.replaceState(window.history.state, "", canonical);
+    }
+  }
   navigationStore.setState((previous) => {
     const pathname = resolvePathname();
     if (previous.pathname === pathname) {
@@ -163,8 +168,7 @@ function shouldInterceptAnchorClick(event: MouseEvent, anchor: HTMLAnchorElement
   if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) {
     return false;
   }
-
-  return true;
+  return Boolean(activeRouter?.match(url.pathname).route);
 }
 
 /** Attaches a delegated document click listener to convert internal anchors to SPA navigation. */
@@ -208,16 +212,26 @@ export function ensureRouteListener(csrActions?: CsrActionsOptions): void {
 
 /** Stores the active CSR action config for helpers and delegated form submissions. */
 export function configureCsrActions(csrActions?: CsrActionsOptions): void {
-  configureCsrActionsInternal(csrActions, navigate);
+  configureCsrActionsInternal(
+    csrActions,
+    navigate,
+    (to) => activeRouter?.canonicalize(to) ?? to,
+  );
 }
 
 /** Stores the active router instance for imperative navigation calls. */
 export function setActiveRouter(
-  router: {
-    navigate(to: string, options?: RouterNavigateOptions): void;
-  } | null,
+  router: Router | null,
 ): void {
   activeRouter = router;
+  if (router && typeof window !== "undefined") {
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const canonical = router.canonicalize(current);
+    if (canonical !== current) {
+      window.history.replaceState(window.history.state, "", canonical);
+      syncPathnameFromLocation();
+    }
+  }
 }
 
 /** Stores the active auto-pages resolver used by prefetch and status APIs. */
@@ -352,7 +366,8 @@ export function subscribePendingRoute(listener: (pending: PagesRuntimePending | 
 
 /** Navigates using active router when available, with history fallback. */
 export function navigate(to: string, options?: RouterNavigateOptions): void {
-  const targetPathname = resolveNavigationTargetPathname(to);
+  const canonicalTarget = activeRouter?.canonicalize(to) ?? to;
+  const targetPathname = resolveNavigationTargetPathname(canonicalTarget);
   navigationStore.setState((previous) => {
     if (previous.pathname === targetPathname) {
       return previous;
@@ -361,7 +376,7 @@ export function navigate(to: string, options?: RouterNavigateOptions): void {
   });
 
   if (activeRouter) {
-    activeRouter.navigate(to, options);
+    activeRouter.navigate(canonicalTarget, options);
     syncPathnameFromLocation();
     return;
   }
@@ -369,12 +384,12 @@ export function navigate(to: string, options?: RouterNavigateOptions): void {
     return;
   }
 
-  prepareRouterScrollNavigation(to, options);
+  prepareRouterScrollNavigation(canonicalTarget, options);
   const state = createRouterHistoryState(options);
   if (options?.replace) {
-    window.history.replaceState(state, "", to);
+    window.history.replaceState(state, "", canonicalTarget);
   } else {
-    window.history.pushState(state, "", to);
+    window.history.pushState(state, "", canonicalTarget);
   }
   window.dispatchEvent(createRoutePopStateEvent());
   syncPathnameFromLocation();
@@ -395,6 +410,7 @@ export function updateBrowserUrl(to: string, options?: { replace?: boolean }): v
 
 /** Prefetches a route by resolving its loaders without changing browser location. */
 export async function prefetchRoute(pathname: string, options?: { signal?: AbortSignal }): Promise<void> {
+  pathname = activeRouter?.canonicalize(pathname) ?? pathname;
   if (!activeResolver) {
     setRouteStatus({ pathname, status: "idle", error: null });
     return;

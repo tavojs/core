@@ -8,6 +8,7 @@ import type {
 import type { Store } from "../store/index.js";
 import type { TAVO_PLUGIN_API_VERSION } from "./declarations.js";
 import type { PluginOverride } from "./configuration-types.js";
+import type { ResolvedUrlPolicy, TrailingSlashPolicy } from "../router/url-policy.js";
 
 // The compiler imports its normalized representation from this internal module.
 // The public plugin entrypoint deliberately exports only the ergonomic subset.
@@ -132,6 +133,8 @@ export type TavoPluginManifest = {
 
 export type PluginResolveContext = {
   readonly instanceId: string;
+  /** The framework-resolved URL policy used by links, SSR, and prerendering. */
+  readonly urlPolicy: ResolvedUrlPolicy;
   resolve<T>(
     token: PluginCapabilityToken<T, "runtime"> | PluginStoreToken<any>,
   ): T;
@@ -329,10 +332,12 @@ export type PluginGraphInspection = {
 
 export type PluginCompileOptions = {
   appRoutes?: readonly string[];
+  routing?: { trailingSlash?: TrailingSlashPolicy };
 };
 
 export type PluginRequestScope = {
   readonly request: Request;
+  readonly urlPolicy: ResolvedUrlPolicy;
   resolve<T>(
     token: PluginCapabilityToken<T, any> | PluginStoreToken<any>,
   ): Promise<T>;

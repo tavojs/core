@@ -44,7 +44,7 @@ export function createPagesRuntime(
   );
   const pluginRuntime =
     options?.pluginRuntime ??
-    createPluginRuntime(options?.plugins, { appRoutes });
+    createPluginRuntime(options?.plugins, { appRoutes, routing: options?.routing });
   const runtimeModules = {
     ...pluginRuntime.routeModules,
     ...modules,
@@ -69,7 +69,10 @@ export function createPagesRuntime(
         params,
       }),
   }));
-  const router = createRouter(routeConfigs);
+  const router = createRouter(routeConfigs, {
+    routing: options?.routing,
+    resolveRoutePathname: (pathname) => runtimeI18n?.resolvePath(pathname).pathname ?? pathname,
+  });
   const moduleCache = new Map<string, PageModuleRecord>();
   const resolutionCache = createRuntimeResolutionCache({
     maxEntries: normalizeResolvedCacheLimit(options?.maxResolvedCacheEntries),
@@ -186,6 +189,6 @@ export async function createPagesRuntimeAsync(
   );
   const pluginRuntime =
     options?.pluginRuntime ??
-    (await createPluginRuntimeAsync(options?.plugins, { appRoutes }));
+    (await createPluginRuntimeAsync(options?.plugins, { appRoutes, routing: options?.routing }));
   return createPagesRuntime(modules, { ...options, pluginRuntime });
 }

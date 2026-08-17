@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { inspectPluginGraph } from "@tavojs/core/dev";
 import { ARTIFACT_SCHEMA_VERSION, BUILD_DIR, GENERATED_DIR } from "../constants.mjs";
 import {
   loadProjectConfig,
@@ -9,7 +10,7 @@ import {
   readPagesDirFromConfig,
   readPrerenderStyleModeFromConfig
 } from "../project/config.mjs";
-import { collectPageRoutes, generateRouteArtifacts } from "../project/routes.mjs";
+import { collectPageRoutes, collectTrailingSlashLinkDiagnostics, generateRouteArtifacts } from "../project/routes.mjs";
 import type {
   BuildFlags,
   BuildReport,
@@ -121,13 +122,23 @@ async function writeProductionSsrFiles({
   buildRoot,
   pagesDir,
   cssEntries,
-  vite
+  vite,
+  routes,
+  endpoints,
+  trailingSlash,
 }: {
   rootDir: string;
   buildRoot: string;
   pagesDir: string;
   cssEntries: string[];
   vite: typeof import("vite");
+  routes: readonly { path: string }[];
+  endpoints: readonly {
+    methods: readonly string[];
+    kind: "exact" | "subtree";
+    path: string;
+  }[];
+  trailingSlash: "always" | "never" | "preserve";
 }): Promise<void> {
   const serverDir = path.join(buildRoot, "server");
   await fs.mkdir(serverDir, { recursive: true });
@@ -156,7 +167,15 @@ async function writeProductionSsrFiles({
     }
   });
 
-  await fs.writeFile(path.join(serverDir, "start.mjs"), createPreviewServerSource(), "utf8");
+  await fs.writeFile(
+    path.join(serverDir, "start.mjs"),
+    createPreviewServerSource({
+      routes: routes.map((route) => route.path),
+      endpoints,
+      trailingSlash,
+    }),
+    "utf8",
+  );
 
   await fs.writeFile(
     path.join(buildRoot, "build-manifest.json"),
@@ -213,13 +232,28 @@ export async function buildWithRouteReport(flags: BuildFlags = {}): Promise<void
   })) as ViteBuildResult;
 
   const routes = await collectPageRoutes(rootDir, pagesDir);
-  await generateRouteArtifacts(rootDir, routes);
+  const pluginGraph = inspectPluginGraph(projectConfig.plugins, {
+    appRoutes: routes.map((route) => route.path),
+  });
+  const linkDiagnostics = await collectTrailingSlashLinkDiagnostics(
+    rootDir,
+    routes,
+    projectConfig.routing?.trailingSlash ?? "preserve",
+  );
+  await generateRouteArtifacts(
+    rootDir,
+    routes,
+    projectConfig.routing?.trailingSlash ?? "preserve",
+  );
   await writeProductionSsrFiles({
     rootDir,
     buildRoot,
     pagesDir,
     cssEntries: resolvedCssEntries,
-    vite
+    vite,
+    routes,
+    endpoints: pluginGraph.endpoints,
+    trailingSlash: projectConfig.routing?.trailingSlash ?? "preserve",
   });
   const buildConfigKey = Symbol.for(BUILD_CONFIG_GLOBAL_KEY);
   const buildGlobal = globalThis as typeof globalThis & {
@@ -234,7 +268,10 @@ export async function buildWithRouteReport(flags: BuildFlags = {}): Promise<void
     prerender = await writePrerenderedStaticPages({
       rootDir,
       buildRoot,
-      styleMode: prerenderStyleMode
+      styleMode: prerenderStyleMode,
+      routes,
+      trailingSlash: projectConfig.routing?.trailingSlash ?? "preserve",
+      endpoints: pluginGraph.endpoints,
     });
   } finally {
     if (previousBuildConfig === undefined) {
@@ -277,6 +314,9 @@ export async function buildWithRouteReport(flags: BuildFlags = {}): Promise<void
   console.log(`Prerendered styles: ${prerenderStyleMode}`);
   for (const diagnostic of prerender.diagnostics) {
     console.warn(`Prerender warning: ${diagnostic}`);
+  }
+  for (const diagnostic of linkDiagnostics) {
+    console.warn(`Routing warning: ${diagnostic}`);
   }
   if (budgetViolations.length > 0) {
     throw new Error(

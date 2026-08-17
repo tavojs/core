@@ -179,11 +179,17 @@ async function runBootTavo(
       middleware: options?.middleware,
       allowExternalRedirects: options?.allowExternalRedirects,
       i18n: options?.i18n,
-      plugins: options?.plugins
+      plugins: options?.plugins,
+      routing: options?.routing
     };
     configureCsrActions(csrActions);
     const runtimeState = hydrateRoot ? undefined : createAutoPagesRuntimeState(appProps);
     if (runtimeState) {
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const canonicalUrl = runtimeState.runtime.router.canonicalize(currentUrl);
+      if (canonicalUrl !== currentUrl) {
+        window.history.replaceState(window.history.state, "", canonicalUrl);
+      }
       await resolveInitialClientRoute(runtimeState, options);
     }
 
@@ -230,7 +236,8 @@ async function runBootTavo(
     notFound: nodeOptions.notFound ?? options?.notFound,
     csrFallback: nodeOptions.csrFallback ?? options?.csrFallback,
     middleware: nodeOptions.middleware ?? options?.middleware,
-    i18n: nodeOptions.i18n ?? options?.i18n
+    i18n: nodeOptions.i18n ?? options?.i18n,
+    routing: nodeOptions.routing ?? options?.routing
   });
 
   return { mode: "server", handle, modules };

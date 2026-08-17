@@ -183,9 +183,12 @@ function renderResolvedPagesResponse(
   applyResolvedI18n(runtime, resolved);
 
   if (resolved.redirect) {
-    const redirect = normalizeRedirectTarget(resolved.redirect, {
+    const normalizedRedirect = normalizeRedirectTarget(resolved.redirect, {
       allowExternal: options?.allowExternalRedirects,
     });
+    const redirect = normalizedRedirect.startsWith("/") && !normalizedRedirect.startsWith("//")
+      ? runtime.router.canonicalize(normalizedRedirect)
+      : normalizedRedirect;
     const fallbackNode = h("main", null, `Redirect to ${redirect}`);
     const redirectHead =
       `${options?.document?.unsafeHeadHtml ?? ""}${assetHead}${pluginHead}`
@@ -285,9 +288,12 @@ function renderResolvedPagesStreamResponse(
   applyResolvedI18n(runtime, resolved);
 
   if (resolved.redirect) {
-    const redirect = normalizeRedirectTarget(resolved.redirect, {
+    const normalizedRedirect = normalizeRedirectTarget(resolved.redirect, {
       allowExternal: options?.allowExternalRedirects,
     });
+    const redirect = normalizedRedirect.startsWith("/") && !normalizedRedirect.startsWith("//")
+      ? runtime.router.canonicalize(normalizedRedirect)
+      : normalizedRedirect;
     const fallbackNode = h("main", null, `Redirect to ${redirect}`);
     const redirectHead =
       `${options?.document?.unsafeHeadHtml ?? ""}${assetHead}${pluginHead}`

@@ -25,11 +25,15 @@ import type {
   TavoPluginRuntime,
   TavoPluginInput,
 } from "./types.js";
+import { resolveUrlPolicy } from "../router/url-policy.js";
 
 async function initializeRuntime(
   graph: CompiledPluginGraph,
+  options?: PluginCompileOptions,
 ): Promise<TavoPluginRuntime> {
+  const urlPolicy = resolveUrlPolicy(options?.routing);
   const state: RuntimeState = {
+    urlPolicy,
     values: new Map(),
     requestFactories: new Map(),
     phases: new Map(),
@@ -68,6 +72,7 @@ async function initializeRuntime(
       state.phases.set(plugin.owner, phase);
       const context: PluginResolveContext = {
         instanceId: plugin.instanceId,
+        urlPolicy,
         ...runtimeResolver(graph, state, plugin),
       };
       for (const token of plugin.plugin.manifest.provides ?? []) {
@@ -191,8 +196,10 @@ function initializeRuntimeSync(graph: CompiledPluginGraph): TavoPluginRuntime {
 }
 
 // A genuinely synchronous path is kept separate because Promise callbacks never run inline.
-function createRuntimeSync(graph: CompiledPluginGraph): TavoPluginRuntime {
+function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOptions): TavoPluginRuntime {
+  const urlPolicy = resolveUrlPolicy(options?.routing);
   const state: RuntimeState = {
+    urlPolicy,
     values: new Map(),
     requestFactories: new Map(),
     phases: new Map(),
@@ -238,6 +245,7 @@ function createRuntimeSync(graph: CompiledPluginGraph): TavoPluginRuntime {
       state.phases.set(plugin.owner, phase);
       const context: PluginResolveContext = {
         instanceId: plugin.instanceId,
+        urlPolicy,
         ...runtimeResolver(graph, state, plugin),
       };
       for (const token of plugin.plugin.manifest.provides ?? []) {
@@ -356,7 +364,7 @@ export function createPluginRuntime(
   config: TavoPluginInput = [],
   options?: PluginCompileOptions,
 ): TavoPluginRuntime {
-  return createRuntimeSync(compilePluginGraph(config, options));
+  return createRuntimeSync(compilePluginGraph(config, options), options);
 }
 
 /** Creates an async-capable plugin runtime. */
@@ -364,7 +372,7 @@ export async function createPluginRuntimeAsync(
   config: TavoPluginInput = [],
   options?: PluginCompileOptions,
 ): Promise<TavoPluginRuntime> {
-  return initializeRuntime(compilePluginGraph(config, options));
+  return initializeRuntime(compilePluginGraph(config, options), options);
 }
 
 /** Serializes validated plugin head contributions. */
