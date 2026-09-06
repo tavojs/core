@@ -1,4 +1,5 @@
 import path from "node:path";
+import { isWithinDirectory } from "../directories.js";
 
 export type Replacement = { start: number; end: number; text: string };
 export type ObjectRange = { start: number; end: number };
@@ -12,9 +13,8 @@ export function stripQuery(id: string): string {
   return id.split("?", 1)[0] ?? id;
 }
 
-export function isPagesModule(file: string, root: string): boolean {
-  const relative = path.relative(root, file).replace(/\\/g, "/");
-  return relative.startsWith("src/pages/") && /\.[cm]?[jt]sx?$/.test(file);
+export function isPagesModule(file: string, root: string, pagesDir = "src/pages"): boolean {
+  return isWithinDirectory(file, path.resolve(root, pagesDir)) && /\.[cm]?[jt]sx?$/.test(file);
 }
 
 export function findInitializerEnd(code: string, start: number): number {

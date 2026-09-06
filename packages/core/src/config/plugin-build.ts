@@ -156,9 +156,9 @@ export async function applyPluginBuildConfig<T extends TavoViteConfig>(
     }
   }
 
-  const pluginAliasEntries = Object.entries(aliases).map(
-    ([find, replacement]) => ({ find, replacement }),
-  );
+  const pluginAliasEntries = Object.entries(aliases)
+    .filter(([key]) => !currentAliasKeys.has(key))
+    .map(([find, replacement]) => ({ find, replacement }));
   const mergedAlias = Array.isArray(currentAlias)
     ? [...pluginAliasEntries, ...currentAlias]
     : currentAlias && typeof currentAlias === "object"

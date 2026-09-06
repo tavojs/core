@@ -13,6 +13,7 @@ import type {
   Unsubscribe
 } from "./types.js";
 import { createWatchSelector, setPathValue } from "./path.js";
+import { createStoreNotifier } from "./notifications.js";
 import {
   createStoreSnapshotId,
   registerStore,
@@ -73,13 +74,10 @@ export function createStore<T extends Record<string, unknown>>(
   let storeApi: Store<T>;
   const listeners = new Set<StoreListener<T>>();
   const subscriptions = new Set<SelectorSubscription<T, any>>();
-
-  function emit(nextState: T, previousState: T): void {
-    for (const listener of listeners) listener(nextState, previousState);
-    for (const subscription of subscriptions) {
-      subscription.notify(nextState, previousState);
-    }
-  }
+  const emit = createStoreNotifier<T>((next, previous) => {
+    for (const listener of listeners) listener(next, previous);
+    for (const subscription of subscriptions) subscription.notify(next, previous);
+  });
 
   function getState(): T {
     if (!initialized) {

@@ -1,5 +1,6 @@
-import { performance } from "node:perf_hooks";
+import assert from "node:assert/strict";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { JSDOM } from "jsdom";
 import { h, renderToString, createStore, createRoot } from "../dist/index.js";
@@ -9,6 +10,8 @@ import { createMemoryStaticCache } from "../dist/ssr/index.js";
 import { createFetchRequestHandler } from "../dist/ssr/handlers.js";
 import { renderDocument, renderDocumentStream } from "../dist/server.js";
 import { normalizeChildren } from "../dist/runtime/dom/utils.js";
+import { cancelScheduledComponent, flushSync, getScheduledUpdateCount, scheduleComponent } from "../dist/runtime/dom/scheduler.js";
+import { runBenchmark } from "./measure.mjs";
 
 let sink = 0;
 const jsonIndex = process.argv.indexOf("--json");
@@ -23,6 +26,9 @@ const baselinePayload = baselinePath
 const baselineByName = new Map(
   (baselinePayload?.benchmarks ?? []).map((entry) => [entry.name, entry])
 );
+const baselineAliases = new Map([
+  ["store.watch (subscribe/unsubscribe)", "store.watch (nested path updates)"],
+]);
 
 function consume(value) {
   if (typeof value === "number") {
@@ -42,36 +48,6 @@ function formatNumber(value) {
 
 function formatDuration(value) {
   return `${value < 0.01 ? value.toFixed(6) : value.toFixed(2)} ms`;
-}
-
-async function runBenchmark(name, options, fn) {
-  const rounds = options.rounds ?? 6;
-  const iterations = options.iterations ?? 1_000;
-  const warmupIterations = options.warmupIterations ?? Math.max(100, Math.floor(iterations / 10));
-  const isAsync = options.async === true;
-
-  for (let i = 0; i < warmupIterations; i += 1) {
-    consume(isAsync ? await fn(i) : fn(i));
-  }
-
-  const samples = [];
-  for (let round = 0; round < rounds; round += 1) {
-    const startedAt = performance.now();
-    for (let i = 0; i < iterations; i += 1) {
-      consume(isAsync ? await fn(i) : fn(i));
-    }
-    const elapsedMs = performance.now() - startedAt;
-    samples.push(elapsedMs);
-  }
-
-  const avgMs = samples.reduce((sum, value) => sum + value, 0) / samples.length;
-  return {
-    name,
-    iterations,
-    avgMs,
-    avgOpMs: avgMs / iterations,
-    opsPerSecond: (iterations / avgMs) * 1_000
-  };
 }
 
 function makeTree(depth, breadth, path = "n") {
@@ -103,19 +79,34 @@ function installDomGlobals(dom) {
   });
 }
 
+const originalDomGlobals = new Map([
+  "window", "document", "Node", "Text", "HTMLElement", "Event", "MouseEvent", "PopStateEvent", "navigator",
+].map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
+
+function restoreDomGlobals() {
+  for (const [name, descriptor] of originalDomGlobals) {
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else delete globalThis[name];
+  }
+}
+
 async function readStream(stream) {
   const reader = stream.getReader();
   let out = "";
   const decoder = new TextDecoder();
-  while (true) {
-    const result = await reader.read();
-    if (result.done) {
-      break;
+  try {
+    while (true) {
+      const result = await reader.read();
+      if (result.done) {
+        break;
+      }
+      out += decoder.decode(result.value, { stream: true });
     }
-    out += decoder.decode(result.value, { stream: true });
+    out += decoder.decode();
+    return out;
+  } finally {
+    reader.releaseLock();
   }
-  out += decoder.decode();
-  return out;
 }
 
 const staticTree = makeTree(3, 4);
@@ -135,19 +126,25 @@ const listItems = Array.from({ length: 1_000 }, (_, index) =>
 const listTree = h("ul", { className: "items" }, ...listItems);
 
 const store = createStore({ count: 0, label: "tavo", values: [1, 2, 3, 4] });
+const nestedStore = createStore({ profile: { details: { name: "tavo" } } });
+let nestedNotifications = 0;
+const unwatchNested = nestedStore.watch("profile.details.name", (next) => {
+  nestedNotifications += 1;
+  consume(next);
+});
 const derivedStore = computedStore(store, (state) => ({
   label: `${state.label}:${state.count}`
 }));
-store.subscribe(() => {
+const unsubscribeStore = store.subscribe(() => {
   sink ^= 1;
 });
-store.subscribeSelector(
+const unsubscribeSelector = store.subscribeSelector(
   (state) => state.count,
   (next) => {
     sink ^= next & 1;
   }
 );
-store.watch("label", (next) => {
+const unwatchLabel = store.watch("label", (next) => {
   sink ^= next.length;
 });
 
@@ -221,6 +218,55 @@ const mediumInteractiveTree = h(
   )
 );
 const mediumHydrationMarkup = renderToString(mediumInteractiveTree);
+const hydrationDom = new JSDOM("<!doctype html><div id='app'></div>");
+const hydrationContainer = hydrationDom.window.document.getElementById("app");
+let activeHydrationRoot;
+function hydrationSetup(markup) {
+  installDomGlobals(hydrationDom);
+  hydrationContainer.innerHTML = markup;
+  activeHydrationRoot = createRoot(hydrationContainer);
+  return activeHydrationRoot;
+}
+function hydrationTeardown(root) {
+  root.unmount();
+  activeHydrationRoot = undefined;
+}
+function hydrate(root, tree) {
+  const result = root.hydrateChecked(tree);
+  if (!result.ok) throw result.error;
+  return 1;
+}
+
+const schedulerJobs = [
+  [100, 1_000, 0.1],
+  [1_000, 200, 1],
+  [10_000, 30, 10],
+].map(([count, iterations, maxAvgOpMs]) => {
+  let rendered = 0;
+  const components = Array.from({ length: count }, () => ({
+    unmounted: false,
+    performRender() { rendered += 1; },
+  }));
+  return [`scheduler enqueue + flush (${count} components)`, {
+    iterations,
+    warmupIterations: Math.max(3, Math.floor(iterations / 10)),
+    maxAvgOpMs,
+    setup() { rendered = 0; },
+    teardown() {
+      try {
+        assert.equal(rendered, count);
+        assert.equal(getScheduledUpdateCount(), 0);
+      } finally {
+        for (const component of components) cancelScheduledComponent(component);
+      }
+    },
+  }, () => {
+    flushSync(() => {
+      for (const component of components) scheduleComponent(component);
+    });
+    return rendered;
+  }];
+});
 const nestedChildInput = ["a", null, ["b", false, ["c", undefined, [1, true]]]];
 let deepChildInput = "leaf";
 for (let index = 0; index < 64; index += 1) {
@@ -269,8 +315,17 @@ const benchmarkJobs = [
       count: previous.count + 1
     })).count;
   }],
-  ["store.watch (nested path updates)", { iterations: 150_000, maxAvgOpMs: 0.00025 }, () => {
+  ["store.watch (subscribe/unsubscribe)", { iterations: 150_000, maxAvgOpMs: 0.00025 }, () => {
     return store.watch("label", () => {})();
+  }],
+  ["store.watch (nested path notifications)", {
+    iterations: 100_000, maxAvgOpMs: 0.002,
+    verify(result) {
+      assert.equal(nestedNotifications, result.iterations * result.rounds + result.warmupIterations);
+    },
+  }, () => {
+    nestedStore.set("profile.details.name", (previous) => previous === "tavo" ? "next" : "tavo");
+    return nestedNotifications;
   }],
   ["computedStore read (derived state)", { iterations: 200_000, maxAvgOpMs: 0.00008 }, () => {
     return derivedStore.getState().label;
@@ -298,33 +353,28 @@ const benchmarkJobs = [
     benchmarkRoot.render(keyedList(keyedForward));
     return benchmarkContainer.childNodes.length;
   }],
-  ["dom hydrate (simple page)", { iterations: 400, maxAvgOpMs: 3 }, () => {
-    const dom = new JSDOM(`<!doctype html><div id="app">${hydrationMarkup}</div>`);
-    installDomGlobals(dom);
-    const container = dom.window.document.getElementById("app");
-    const root = createRoot(container);
-    root.hydrate(hydrationTree);
-    return container.childNodes.length;
-  }],
-  ["dom hydrate (medium interactive page)", { iterations: 200, maxAvgOpMs: 5 }, () => {
-    const dom = new JSDOM(`<!doctype html><div id="app">${mediumHydrationMarkup}</div>`);
-    installDomGlobals(dom);
-    const container = dom.window.document.getElementById("app");
-    const root = createRoot(container);
-    root.hydrate(mediumInteractiveTree);
-    return container.querySelectorAll("button").length;
-  }]
+  ...schedulerJobs,
+  ["dom hydrate (simple page)", {
+    iterations: 400, maxAvgOpMs: 3,
+    setup: () => hydrationSetup(hydrationMarkup), teardown: hydrationTeardown,
+  }, (_index, root) => hydrate(root, hydrationTree)],
+  ["dom hydrate (medium interactive page)", {
+    iterations: 200, maxAvgOpMs: 5,
+    setup: () => hydrationSetup(mediumHydrationMarkup), teardown: hydrationTeardown,
+  }, (_index, root) => hydrate(root, mediumInteractiveTree)],
 ];
 
 const benchmarks = [];
+try {
 for (const [name, options, fn] of benchmarkJobs) {
-  const result = await runBenchmark(name, options, fn);
+  const result = await runBenchmark(name, options, fn, consume);
+  options.verify?.(result);
+  const baseline = baselineByName.get(name) ?? baselineByName.get(baselineAliases.get(name));
   const threshold = {
     maxAvgMs: typeof options.maxAvgMs === "number" ? options.maxAvgMs : null,
     maxAvgOpMs: typeof options.maxAvgOpMs === "number" ? options.maxAvgOpMs : null,
-    maxRegressionPercent: baselineByName.has(name) ? maxRegressionPercent : null
+    maxRegressionPercent: baseline ? maxRegressionPercent : null
   };
-  const baseline = baselineByName.get(name);
   const regressionPercent = baseline?.avgOpMs > 0
     ? ((result.avgOpMs - baseline.avgOpMs) / baseline.avgOpMs) * 100
     : null;
@@ -353,6 +403,22 @@ for (const [name, options, fn] of benchmarkJobs) {
     thresholdFailures
   });
 }
+} finally {
+  try {
+    activeHydrationRoot?.unmount();
+    installDomGlobals(benchmarkDom);
+    benchmarkRoot.unmount();
+    derivedStore.dispose();
+    unsubscribeStore();
+    unsubscribeSelector();
+    unwatchLabel();
+    unwatchNested();
+  } finally {
+    hydrationDom.window.close();
+    benchmarkDom.window.close();
+    restoreDomGlobals();
+  }
+}
 
 const nameWidth = Math.max(...benchmarks.map((entry) => entry.name.length), 10);
 const line = "-".repeat(nameWidth + 38);
@@ -366,7 +432,7 @@ console.log(line);
 
 for (const result of benchmarks) {
   console.log(
-    `${result.name.padEnd(nameWidth)}  ${formatNumber(result.iterations).padStart(10)}  ${formatNumber(result.avgMs).padStart(10)}  ${formatNumber(result.avgOpMs).padStart(10)}  ${formatNumber(result.opsPerSecond).padStart(12)}`
+    `${result.name.padEnd(nameWidth)}  ${formatNumber(result.iterations).padStart(10)}  ${formatNumber(result.avgMs).padStart(10)}  ${result.avgOpMs.toFixed(6).padStart(10)}  ${formatNumber(result.opsPerSecond).padStart(12)}`
   );
 }
 
@@ -380,6 +446,18 @@ if (jsonOutputPath) {
     `${JSON.stringify({
       generatedAt: new Date().toISOString(),
       node: process.version,
+      environment: {
+        platform: process.platform,
+        arch: process.arch,
+        cpu: os.cpus()[0]?.model ?? null,
+        nodeEnv: process.env.NODE_ENV ?? null,
+      },
+      measurementNotes: [
+        "Six rounds by default; raw round durations and median are reported alongside the existing arithmetic mean.",
+        "Hydration excludes DOM parsing, root creation, unmount, and JSDOM setup/teardown; older hydration results included setup and are not directly comparable.",
+        "Scheduler workloads measure enqueue plus synchronous flush with no-op component render callbacks; one operation is one complete fanout.",
+        "JSDOM microbenchmarks do not measure browser layout/paint. Shared-host scheduling and garbage collection can affect results.",
+      ],
       baseline: baselinePath ? path.resolve(baselinePath) : null,
       benchmarks
     }, null, 2)}\n`,

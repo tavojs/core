@@ -1663,7 +1663,7 @@ test("hydrate does not report mismatch when markup matches", () => {
   clearDom();
 });
 
-test("csr promise-backed deferred renders fallback without client stream resolution", async () => {
+test("csr promise-backed deferred reconciles fallback to its resolved value", async () => {
   const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`);
   const app = dom.window.document.getElementById("app");
   assert.ok(app);
@@ -1673,7 +1673,8 @@ test("csr promise-backed deferred renders fallback without client stream resolut
     resolveValue = resolve;
   });
 
-  createRoot(app).render(
+  const root = createRoot(app);
+  root.render(
     h(
       Deferred,
       {
@@ -1690,8 +1691,114 @@ test("csr promise-backed deferred renders fallback without client stream resolut
   resolveValue("client stream value");
   await new Promise((resolve) => setTimeout(resolve, 20));
 
-  assert.match(app.innerHTML, /csr fallback/);
-  assert.doesNotMatch(app.innerHTML, /client stream value/);
+  await waitFor(() => app.textContent === "client stream value");
+
+  assert.doesNotMatch(app.innerHTML, /csr fallback/);
+  assert.match(app.innerHTML, /client stream value/);
+  root.unmount();
+  clearDom();
+});
+
+test("csr promise-backed deferred renders rejected and timed-out branches", async () => {
+  const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`);
+  const app = dom.window.document.getElementById("app");
+  assert.ok(app);
+
+  let rejectValue: ((error: unknown) => void) | null = null;
+  const rejected = new Promise<string>((_resolve, reject) => {
+    rejectValue = reject;
+  });
+  const root = createRoot(app);
+  root.render(
+    h(
+      Deferred,
+      {
+        value: rejected,
+        fallback: h("p", null, "loading"),
+        errorFallback: h("p", null, "rejected")
+      },
+      (value: string) => h("p", null, value)
+    )
+  );
+
+  assert.ok(rejectValue);
+  rejectValue(new Error("bounded failure"));
+  await waitFor(() => app.textContent === "rejected");
+
+  root.render(
+    h(
+      Deferred,
+      {
+        value: new Promise<string>(() => {}),
+        fallback: h("p", null, "waiting"),
+        timeoutMs: 10,
+        timeoutFallback: h("p", null, "timed out")
+      },
+      (value: string) => h("p", null, value)
+    )
+  );
+  await waitFor(() => app.textContent === "timed out");
+
+  root.unmount();
+  clearDom();
+});
+
+test("unmount cancels deferred timers, abort listeners, and late continuations", async () => {
+  const dom = setupDom(`<!doctype html><html><body><div id="app"></div></body></html>`);
+  const app = dom.window.document.getElementById("app");
+  assert.ok(app);
+
+  let resolveValue: ((value: string) => void) | null = null;
+  const delayed = new Promise<string>((resolve) => {
+    resolveValue = resolve;
+  });
+  const controller = new AbortController();
+  const signal = controller.signal;
+  const addEventListener = signal.addEventListener.bind(signal);
+  const removeEventListener = signal.removeEventListener.bind(signal);
+  let abortAdds = 0;
+  let abortRemoves = 0;
+  signal.addEventListener = ((
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: AddEventListenerOptions | boolean
+  ) => {
+    if (type === "abort") abortAdds += 1;
+    addEventListener(type, listener, options);
+  }) as typeof signal.addEventListener;
+  signal.removeEventListener = ((
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: EventListenerOptions | boolean
+  ) => {
+    if (type === "abort") abortRemoves += 1;
+    removeEventListener(type, listener, options);
+  }) as typeof signal.removeEventListener;
+
+  const root = createRoot(app);
+  root.render(
+    h(
+      Deferred,
+      {
+        value: delayed,
+        signal,
+        timeoutMs: 1_000,
+        fallback: h("p", null, "waiting")
+      },
+      (value: string) => h("p", null, value)
+    )
+  );
+  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  assert.equal(abortAdds, 1);
+
+  root.unmount();
+  assert.equal(abortRemoves, abortAdds);
+  assert.equal(app.childNodes.length, 0);
+
+  assert.ok(resolveValue);
+  resolveValue("too late");
+  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  assert.equal(app.childNodes.length, 0);
   clearDom();
 });
 

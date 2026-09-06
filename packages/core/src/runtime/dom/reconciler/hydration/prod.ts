@@ -1,24 +1,12 @@
 import { Fragment, type Child, type Component, type VNode } from "../../../../jsx.js";
-import {
-  withDependencyCollector,
-  withoutDependencyCollector,
-  type StoreDependency
-} from "../../../../reactivity.js";
+import { withoutDependencyCollector } from "../../../../reactivity.js";
 import {
   CONTEXT_PROVIDER,
   ERROR_BOUNDARY,
   type ErrorBoundaryFallback,
   type TavoContext
 } from "../../../../components/index.js";
-import {
-  createComponentRuntimeState,
-  runLayoutTasks,
-  schedulePassiveTasks,
-  withActiveComponent
-} from "../../component-runtime.js";
-import { getDependencyKey, reconcileDependencies } from "../../dependencies.js";
 import { hydrateProps } from "../../props.js";
-import { scheduleComponent } from "../../scheduler.js";
 import { assignDomRef } from "../../../../refs/index.js";
 import {
   childToArray,
@@ -28,18 +16,19 @@ import {
 } from "../../child-utils.js";
 import { applyElementLifecycleDirectives } from "../../dom-helpers.js";
 import { createAnchor } from "../../utils.js";
-import {
-  initializeBoundaryRuntime,
-  runComponentRender
-} from "../mount-nodes.js";
+import { initializeBoundaryRuntime } from "../mount-nodes.js";
+import { hydrateComponentRuntime } from "./component.js";
 import type {
   HydrateResult,
-  MountedComponent,
+  MountedElement,
   MountedErrorBoundary,
-  MountedNode,
-  RootDependencySubscription
+  MountedNode
 } from "../../types.js";
-import type { HydrationOperations, RenderEnv } from "../context.js";
+import {
+  trackMountedNode,
+  type HydrationOperations,
+  type RenderEnv
+} from "../context.js";
 
 function hydrateFragmentProd(
   parent: Node,
@@ -167,73 +156,12 @@ function hydrateComponentProd(
   env: RenderEnv,
   operations: HydrationOperations
 ): HydrateResult {
-  const start = createAnchor();
-  parent.insertBefore(start, cursor);
-
-  const component: MountedComponent = {
-    kind: "component",
-    key,
-    start,
-    end: start,
-    type,
-    props,
-    child: null,
-    dependencies: [],
-    runtime: createComponentRuntimeState(),
-    context: env.context,
-    boundary: env.boundary,
-    unmounted: false,
-    isRendering: false,
-    queued: false,
-    performRender: () => {},
-    rerender: () => {}
-  };
-
-  component.performRender = () => {
-    const parentNode = component.start.parentNode;
-    if (!parentNode || component.unmounted) {
-      return;
-    }
-    runComponentRender(component, parentNode, operations);
-  };
-  component.rerender = () => {
-    if (component.unmounted) {
-      return;
-    }
-    scheduleComponent(component);
-  };
-
-  const dependenciesByKey = new Map<string, StoreDependency>();
-  const output = withActiveComponent(component, () =>
-    withDependencyCollector(
-      (dependency) => {
-        dependenciesByKey.set(getDependencyKey(dependency), dependency);
-      },
-      () => type(props)
-    )
+  return hydrateComponentRuntime(parent, cursor, type, props, key, env, operations, (output) =>
+    operations.hydrateNodeProd(parent, cursor, output, {
+      context: env.context,
+      boundary: env.boundary
+    })
   );
-
-  const hydratedChild = operations.hydrateNodeProd(parent, cursor, output, {
-    context: component.context,
-    boundary: component.boundary
-  });
-
-  const end = createAnchor();
-  parent.insertBefore(end, hydratedChild.cursor);
-  component.end = end;
-  component.child = hydratedChild.mounted;
-  component.dependencies = reconcileDependencies(
-    component.dependencies as RootDependencySubscription[],
-    Array.from(dependenciesByKey.values()),
-    component.rerender
-  );
-  runLayoutTasks(component);
-  schedulePassiveTasks(component);
-
-  return {
-    mounted: component,
-    cursor: hydratedChild.cursor
-  };
 }
 
 export function hydrateNodeProd(
@@ -342,13 +270,28 @@ export function hydrateNodeProd(
     (cursor as Element).tagName.toLowerCase() === child.type
   ) {
     const element = cursor as Element;
+    const partialElement: MountedElement = trackMountedNode(env, {
+      kind: "element",
+      key,
+      start: element,
+      end: element,
+      node: element,
+      tag: child.type as string,
+      props: child.props,
+      children: [],
+      directivesCleanup: null
+    });
+    const completeElement = (mounted: MountedElement): MountedElement => {
+      partialElement.props = {};
+      return mounted;
+    };
     hydrateProps(element, child.props);
     assignDomRef(child.props.ref, element);
 
     const rawChildren = child.props.children;
     if (isEmptyChildValue(rawChildren) && element.firstChild === null) {
       return {
-        mounted: {
+        mounted: completeElement({
           kind: "element",
           key,
           start: element,
@@ -358,7 +301,7 @@ export function hydrateNodeProd(
           props: child.props,
           children: [],
           directivesCleanup: applyElementLifecycleDirectives(element, child.props)
-        },
+        }),
         cursor: element.nextSibling
       };
     }
@@ -374,7 +317,7 @@ export function hydrateNodeProd(
         textNode.textContent = textValue;
       }
       return {
-        mounted: {
+        mounted: completeElement({
           kind: "element",
           key,
           start: element,
@@ -393,7 +336,7 @@ export function hydrateNodeProd(
             }
           ],
           directivesCleanup: applyElementLifecycleDirectives(element, child.props)
-        },
+        }),
         cursor: element.nextSibling
       };
     }
@@ -410,7 +353,7 @@ export function hydrateNodeProd(
       }
 
       return {
-        mounted: {
+        mounted: completeElement({
           kind: "element",
           key,
           start: element,
@@ -420,7 +363,7 @@ export function hydrateNodeProd(
           props: child.props,
           children: [hydrated.mounted],
           directivesCleanup: applyElementLifecycleDirectives(element, child.props)
-        },
+        }),
         cursor: element.nextSibling
       };
     }
@@ -440,7 +383,7 @@ export function hydrateNodeProd(
     }
 
     return {
-      mounted: {
+      mounted: completeElement({
         kind: "element",
         key,
         start: element,
@@ -450,7 +393,7 @@ export function hydrateNodeProd(
         props: child.props,
         children: mountedChildren,
         directivesCleanup: applyElementLifecycleDirectives(element, child.props)
-      },
+      }),
       cursor: element.nextSibling
     };
   }

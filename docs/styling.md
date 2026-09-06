@@ -75,13 +75,41 @@ When using SSR, CSS files should be part of the app’s build output so styles a
 
 Tavo.js’s config and dev server helpers can discover common CSS entry files automatically, and `cssEntries` can be used when your app uses a different structure.
 
+## Runtime Style Registry And Lifecycle
+
+Use `style(id, css, options?)` when a component must register runtime CSS. During SSR it writes to the active style registry. In the browser, a call made while a component renders is owned by that component: shared IDs are reference counted, IDs omitted by the next render are released, and root unmount removes the final owned style.
+
+```tsx
+import { style } from "@tavojs/core";
+
+export function PreviewPanel() {
+  style("preview.panel", ".preview-panel { display: grid; }");
+  return <section className="preview-panel">Preview</section>;
+}
+```
+
+Calls made outside a component remain persistent for source compatibility. For an explicitly disposable non-component style, use `retainClientStyle()` and invoke its returned disposer:
+
+```ts
+import { retainClientStyle } from "@tavojs/core";
+
+const release = retainClientStyle("preview.theme", css, {
+  ownerDocument: iframe.contentDocument,
+  attributes: { nonce: cspNonce },
+});
+
+release();
+```
+
+`ownerDocument` keeps iframe or secondary-document styles scoped to the correct document. Under a nonce-based Content Security Policy, pass the host-provided nonce in `attributes`; Tavo.js does not generate or reuse security nonces. `ensureClientStyle()` is the persistent counterpart and is not removed by root disposal.
+
 ## Styling Boundaries
 
 Tavo.js styling keeps these responsibilities with the app and bundler:
 
-- CSS-in-JS runtime ownership
-- framework-generated CSS files
-- framework-only styling functions
+- full CSS-in-JS authoring and runtime policy
+- automatic framework-generated project stylesheets
+- project design-token and theme semantics
 
 Styling should stay flexible and easy to integrate with normal web tooling.
 

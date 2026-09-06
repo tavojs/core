@@ -38,6 +38,7 @@ export type SsrStaticCache = {
   get(key: string): SsrStaticCacheEntry | null | Promise<SsrStaticCacheEntry | null>;
   set(key: string, entry: SsrStaticCacheEntry): void | Promise<void>;
   delete(key: string): void | Promise<void>;
+  /** Implement with clear to manage adapter capacity; otherwise handlers track at most 1,024 entries. */
   invalidateTags?(tags: string[]): number | Promise<number>;
   clear?(): void | Promise<void>;
 };

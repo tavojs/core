@@ -8,6 +8,8 @@ import { createRequestScope } from "./request.js";
 import {
   assertPhaseKeys,
   disposable,
+  discardAsyncResult,
+  disposeRuntimeState,
   hydratePluginStores,
   phaseLoader,
   readDocumentPluginState,
@@ -33,6 +35,7 @@ async function initializeRuntime(
 ): Promise<TavoPluginRuntime> {
   const urlPolicy = resolveUrlPolicy(options?.routing);
   const state: RuntimeState = {
+    disposed: false,
     urlPolicy,
     values: new Map(),
     requestFactories: new Map(),
@@ -59,9 +62,8 @@ async function initializeRuntime(
     hydrate(payload) {
       hydratePluginStores(graph, state, payload);
     },
-    async dispose() {
-      for (const dispose of state.disposers.splice(0).reverse())
-        await dispose();
+    dispose() {
+      return disposeRuntimeState(state);
     },
   };
   try {
@@ -152,11 +154,11 @@ async function initializeRuntime(
           validateOrigin: entry.validateOrigin !== false,
         });
       }
-      await phase.setup?.(context);
       if (phase.dispose)
         state.disposers.push(async () => {
           await phase.dispose!();
         });
+      await phase.setup?.(context);
     }
     runtime.hydrate(readDocumentPluginState());
     return runtime;
@@ -199,6 +201,7 @@ function initializeRuntimeSync(graph: CompiledPluginGraph): TavoPluginRuntime {
 function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOptions): TavoPluginRuntime {
   const urlPolicy = resolveUrlPolicy(options?.routing);
   const state: RuntimeState = {
+    disposed: false,
     urlPolicy,
     values: new Map(),
     requestFactories: new Map(),
@@ -225,19 +228,20 @@ function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOp
     hydrate(payload) {
       hydratePluginStores(graph, state, payload);
     },
-    async dispose() {
-      for (const dispose of state.disposers.splice(0).reverse())
-        await dispose();
+    dispose() {
+      return disposeRuntimeState(state);
     },
   };
   try {
     for (const plugin of graph.plugins) {
       const loaded = phaseLoader(plugin.plugin)?.() ?? {};
-      if (isPromiseLike(loaded))
+      if (isPromiseLike(loaded)) {
+        discardAsyncResult(Promise.resolve(loaded).then((phase) => unwrapPhase(phase as TavoPluginPhase)));
         throw new TavoError(
           "TAVO_PLUGIN_008",
           `Plugin "${plugin.owner}" phase is async. Use createPluginRuntimeAsync().`,
         );
+      }
       const phase = unwrapPhase(
         loaded as TavoPluginPhase | { default: TavoPluginPhase },
       );
@@ -256,11 +260,13 @@ function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOp
           state.requestFactories.set(key, factory as any);
         else {
           const value = factory(context as any);
-          if (isPromiseLike(value))
+          if (isPromiseLike(value)) {
+            discardAsyncResult(value);
             throw new TavoError(
               "TAVO_PLUGIN_008",
               `Plugin "${plugin.owner}" capability "${token.name}" is async.`,
             );
+          }
           state.values.set(key, value);
           const dispose = disposable(value);
           if (dispose) state.disposers.push(dispose);
@@ -268,11 +274,13 @@ function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOp
       }
       for (const token of plugin.plugin.manifest.stores ?? []) {
         const value = phase.stores![token.name]!(context);
-        if (isPromiseLike(value))
+        if (isPromiseLike(value)) {
+          discardAsyncResult(value);
           throw new TavoError(
             "TAVO_PLUGIN_008",
             `Plugin "${plugin.owner}" store "${token.name}" is async.`,
           );
+        }
         state.values.set(
           ownedTokenKey(plugin.owner, token),
           value && typeof (value as Store<AnyRecord>).getState === "function"
@@ -309,11 +317,13 @@ function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOp
           typeof implementation === "function"
             ? implementation(context)
             : implementation;
-        if (isPromiseLike(value))
+        if (isPromiseLike(value)) {
+          discardAsyncResult(value);
           throw new TavoError(
             "TAVO_PLUGIN_008",
             `Plugin "${plugin.owner}" head "${entry.id}" is async.`,
           );
+        }
         if (typeof value === "string") {
           if (!entry.unsafeHeadHtml)
             throw new TavoError(
@@ -335,21 +345,23 @@ function createRuntimeSync(graph: CompiledPluginGraph, options?: PluginCompileOp
           handler: phase.endpoints![entry.id]!,
           validateOrigin: entry.validateOrigin !== false,
         });
-      const setup = phase.setup?.(context);
-      if (isPromiseLike(setup))
-        throw new TavoError(
-          "TAVO_PLUGIN_008",
-          `Plugin "${plugin.owner}" setup is async.`,
-        );
       if (phase.dispose)
         state.disposers.push(async () => {
           await phase.dispose!();
         });
+      const setup = phase.setup?.(context);
+      if (isPromiseLike(setup)) {
+        discardAsyncResult(setup);
+        throw new TavoError(
+          "TAVO_PLUGIN_008",
+          `Plugin "${plugin.owner}" setup is async.`,
+        );
+      }
     }
     runtime.hydrate(readDocumentPluginState());
     return runtime;
   } catch (cause) {
-    void runtime.dispose();
+    void runtime.dispose().catch(() => undefined);
     if (cause instanceof TavoError) throw cause;
     throw new TavoError(
       "TAVO_PLUGIN_008",

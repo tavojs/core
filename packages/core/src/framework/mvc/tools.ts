@@ -167,7 +167,13 @@ export function createControllerTools(
     flushCleanups() {
       const pending = Array.from(cleanups);
       cleanups.clear();
-      for (const fn of pending) fn();
+      for (const fn of pending) {
+        try {
+          fn();
+        } catch {
+          // A failed resource cleanup must not leave other controller resources alive.
+        }
+      }
     }
   };
 }

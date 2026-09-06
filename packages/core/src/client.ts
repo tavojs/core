@@ -8,7 +8,16 @@ export {
   type PropsWithChildren,
   type VNode
 } from "./jsx.js";
-export { createRoot, render, type Root } from "./dom.js";
+export {
+  createRoot,
+  render,
+  type CheckedRoot,
+  type Root,
+  type RootOptions,
+  type RootRenderFailure,
+  type RootRenderOutcome,
+  type RootRenderSuccess
+} from "./dom.js";
 export {
   bootTavo,
   getTavoBootMode,
@@ -47,23 +56,13 @@ export {
   type TransitionClassNames,
   type TransitionOptions
 } from "./elements/index.js";
-export {
-  captureFocusRestore,
-  focusFirst,
-  focusFirstInvalid,
-  getFocusableElements,
-  trapFocus
-} from "./focus/index.js";
-export {
-  observeIntersection,
-  observeMutation,
-  observeResize,
-  type ElementTarget
-} from "./observers/index.js";
+export { captureFocusRestore, focusFirst, focusFirstInvalid, getFocusableElements, trapFocus } from "./focus/index.js";
+export { observeIntersection, observeMutation, observeResize, type ElementTarget } from "./observers/index.js";
 export {
   createStyleRegistry,
   ensureClientStyle,
   getActiveStyleRegistry,
+  retainClientStyle,
   renderStyleTags,
   style,
   withStyleRegistry,

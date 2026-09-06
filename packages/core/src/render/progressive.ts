@@ -1,4 +1,4 @@
-import { CONTEXT_PROVIDER, DEFERRED_BLOCK, ERROR_BOUNDARY } from "../components/index.js";
+import { CONTEXT_PROVIDER, DEFERRED_BLOCK, ERROR_BOUNDARY } from "../components/special.js";
 import { Fragment, type Child, type VNode } from "../jsx.js";
 import {
   resetRuntimeIdCounter,
@@ -18,6 +18,8 @@ export type ProgressiveRenderOptions = {
   nonce?: string;
   beforeRender?: () => void;
   styleRegistry?: StyleRegistry;
+  /** Stops pending stream consumption without cancelling caller-owned promises. */
+  signal?: AbortSignal;
 };
 
 type DeferredTarget = {
@@ -25,13 +27,23 @@ type DeferredTarget = {
   onReject(error: unknown): Promise<string>;
   serialize?: (value: unknown) => unknown;
 };
-type DeferredChunkTask = Promise<string>;
+type DeferredCompletion = {
+  task: DeferredChunkTask;
+  key: string;
+  render(): Promise<string>;
+};
+type DeferredChunkTask = Promise<DeferredCompletion>;
 type StreamRenderState = {
   context: Map<symbol, unknown>;
   nextId: number;
   tasks: Set<DeferredChunkTask>;
+  completions: {
+    ready: Set<DeferredCompletion>;
+    wake: (() => void) | null;
+    closed: boolean;
+  };
   deferredByKey: Map<string, {
-    promise: Promise<string>;
+    promise: DeferredChunkTask;
     targets: Map<string, DeferredTarget>;
   }>;
   options?: ProgressiveRenderOptions;
@@ -92,12 +104,14 @@ function deferredTarget(
   const child = node.props.children[0];
   return {
     async onResolve(resolvedValue: unknown) {
+      state.options?.signal?.throwIfAborted();
       const renderedValue = typeof child === "function"
         ? (child as (input: unknown) => Child)(resolvedValue)
         : child;
       return renderStreamNodeWithStyleRegistry(renderedValue as Child, state);
     },
     async onReject(error: unknown) {
+      state.options?.signal?.throwIfAborted();
       const fallback = isDeferredTimeoutError(error)
         ? node.props.timeoutFallback ?? node.props.errorFallback
         : node.props.errorFallback;
@@ -116,31 +130,54 @@ function createDeferredTask(
   targets: Map<string, DeferredTarget>,
   state: StreamRenderState
 ): DeferredChunkTask {
-  const task = value.then(async (resolvedValue) => {
-    const updates = await Promise.all(Array.from(targets.entries()).map(
-      async ([id, target]): Promise<DeferredUpdate> => ({
-        id,
-        key,
-        status: "resolved",
-        data: target.serialize ? target.serialize(resolvedValue) : resolvedValue,
-        html: await target.onResolve(resolvedValue)
-      })
-    ));
-    return buildDeferredPatchScript(updates, state.options);
-  }).catch(async (error) => {
-    const updates = await Promise.all(Array.from(targets.entries()).map(
-      async ([id, target]): Promise<DeferredUpdate> => ({
-        id,
-        key,
-        status: "rejected",
-        error: isDeferredTimeoutError(error) ? error : stringifyDeferredError(error),
-        html: await target.onReject(error)
-      })
-    ));
-    return buildDeferredPatchScript(updates, state.options);
-  }).finally(() => {
-    state.tasks.delete(task);
-    state.deferredByKey.delete(key);
+  // Settle promises immediately, but render patches only after consuming the shell.
+  // This keeps completed work available under backpressure and includes targets
+  // registered later in the shell. Nested patches follow their parent patch.
+  const outcome = value.then(
+    (data) => ({ status: "resolved" as const, data }),
+    (error: unknown) => ({ status: "rejected" as const, error }),
+  );
+  const render = async () => {
+    const result = await outcome;
+    state.options?.signal?.throwIfAborted();
+    try {
+      if (result.status === "rejected") throw result.error;
+      const resolvedValue = result.data;
+      const updates = await Promise.all(Array.from(targets.entries()).map(
+        async ([id, target]): Promise<DeferredUpdate> => {
+          state.options?.signal?.throwIfAborted();
+          return {
+            id,
+            key,
+            status: "resolved",
+            data: target.serialize ? target.serialize(resolvedValue) : resolvedValue,
+            html: await target.onResolve(resolvedValue)
+          };
+        }
+      ));
+      return buildDeferredPatchScript(updates, state.options);
+    } catch (error) {
+      state.options?.signal?.throwIfAborted();
+      const updates = await Promise.all(Array.from(targets.entries()).map(
+        async ([id, target]): Promise<DeferredUpdate> => ({
+          id,
+          key,
+          status: "rejected",
+          error: isDeferredTimeoutError(error) ? error : stringifyDeferredError(error),
+          html: await target.onReject(error)
+        })
+      ));
+      return buildDeferredPatchScript(updates, state.options);
+    }
+  };
+  const task: DeferredChunkTask = outcome.then(() => {
+    const completed = { task, key, render };
+    if (!state.completions.closed) {
+      state.completions.ready.add(completed);
+      state.completions.wake?.();
+      state.completions.wake = null;
+    }
+    return completed;
   });
   return task;
 }
@@ -177,7 +214,9 @@ async function renderToStreamStringWithContext(
   node: Child,
   state: StreamRenderState
 ): Promise<string> {
+  state.options?.signal?.throwIfAborted();
   state.options?.beforeRender?.();
+  state.options?.signal?.throwIfAborted();
   if (node === null || node === undefined || typeof node === "boolean") return "";
   if (typeof node === "string" || typeof node === "number") {
     return escapeHtml(String(node));
@@ -206,6 +245,7 @@ async function renderToStreamStringWithContext(
     try {
       return await renderToStreamStringWithContext(node.props.children, state);
     } catch (error) {
+      state.options?.signal?.throwIfAborted();
       const fallback = node.props.fallback;
       const rendered = typeof fallback === "function"
         ? (fallback as (value: unknown) => Child)(error)
@@ -261,15 +301,40 @@ export async function* renderToProgressiveStringChunks(
   node: Child,
   options?: ProgressiveRenderOptions
 ): AsyncGenerator<string, void, void> {
+  options?.signal?.throwIfAborted();
   resetRuntimeIdCounter();
   options?.beforeRender?.();
   const state: StreamRenderState = {
     context: new Map<symbol, unknown>(),
     nextId: 0,
     tasks: new Set(),
+    completions: { ready: new Set(), wake: null, closed: false },
     deferredByKey: new Map(),
     options
   };
-  yield await renderStreamNodeWithStyleRegistry(node, state);
-  while (state.tasks.size > 0) yield await Promise.race(state.tasks);
+  const onAbort = () => state.completions.wake?.();
+  options?.signal?.addEventListener("abort", onAbort, { once: true });
+  try {
+    yield await renderStreamNodeWithStyleRegistry(node, state);
+    while (state.tasks.size > 0) {
+      options?.signal?.throwIfAborted();
+      if (state.completions.ready.size === 0) {
+        await new Promise<void>((resolve) => { state.completions.wake = resolve; });
+      }
+      options?.signal?.throwIfAborted();
+      const completed = state.completions.ready.values().next().value!;
+      state.completions.ready.delete(completed);
+      state.tasks.delete(completed.task);
+      state.deferredByKey.delete(completed.key);
+      yield await completed.render();
+    }
+  } finally {
+    options?.signal?.removeEventListener("abort", onAbort);
+    state.completions.closed = true;
+    state.completions.wake = null;
+    state.completions.ready.clear();
+    for (const deferred of state.deferredByKey.values()) deferred.targets.clear();
+    state.tasks.clear();
+    state.deferredByKey.clear();
+  }
 }

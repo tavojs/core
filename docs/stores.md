@@ -281,6 +281,10 @@ const summaryStore = computedStore(appStore, (state) => ({
 
 Use a computed store when the derived value is shared by more than one component or should be subscribed to directly. Use a controller-owned model field when the value is only needed by one `createTavo` view.
 
+Call `summaryStore.dispose()` when its owner is destroyed to release the source subscription.
+The last derived snapshot remains readable after disposal. A controller can register
+`this.cleanup(summaryStore.dispose)` to release it on unmount.
+
 ### `persistStore(...)`
 
 Persist a store to browser storage:
@@ -292,6 +296,9 @@ persistStore(appStore, {
 ```
 
 Use this for small UI state, not large data caches.
+
+Persistence is best effort. Blocked storage, malformed saved data, serialization failures, and
+quota errors do not interrupt notifications to other store subscribers.
 
 ## Best Practices
 

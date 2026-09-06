@@ -427,6 +427,7 @@ for (const file of contractFiles) {
 }
 
 const allowedCoreSubpaths = new Set([
+  "runtime",
   "config",
   "dev",
   "jsx-dev-runtime",

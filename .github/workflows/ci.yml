@@ -44,7 +44,8 @@ jobs:
       - name: Benchmarks
         # GitHub-hosted runners have variable CPU allocation. Keep measurements
         # visible here, but enforce absolute ceilings on controlled hardware.
-        run: npm run benchmark:report
+        # Reuse the build already verified above instead of compiling Core again.
+        run: node --max-old-space-size=4096 packages/core/benchmarks/run.mjs --report-only
 
       - name: Pack Dry Run
         working-directory: packages/core

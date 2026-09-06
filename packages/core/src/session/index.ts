@@ -142,6 +142,12 @@ function createSessionId(): string {
   return base64UrlEncode(bytes);
 }
 
+function cloneSessionData<T extends Record<string, unknown>>(data: T): T {
+  // A session is a request-local snapshot. Nested values must never alias a
+  // stored entry or another request, including when an adapter returns references.
+  return structuredClone(data);
+}
+
 function parseCookieHeader(header: string | null | undefined): Record<string, string> {
   const cookies: Record<string, string> = {};
   for (const part of (header ?? "").split(";")) {
@@ -258,7 +264,7 @@ export function createMemorySessionStore<T extends Record<string, unknown>>(
       return null;
     }
     return {
-      data: { ...entry.data },
+      data: cloneSessionData(entry.data),
       expiresAt: entry.expiresAt
     };
   }
@@ -269,11 +275,12 @@ export function createMemorySessionStore<T extends Record<string, unknown>>(
       if (maxEntries === 0) {
         return;
       }
-      sessions.delete(id);
-      sessions.set(id, {
-        data: { ...entry.data },
+      const snapshot = {
+        data: cloneSessionData(entry.data),
         expiresAt: entry.expiresAt
-      });
+      };
+      sessions.delete(id);
+      sessions.set(id, snapshot);
       while (sessions.size > maxEntries) {
         const oldest = sessions.keys().next().value as string | undefined;
         if (oldest === undefined) {
@@ -307,7 +314,7 @@ export function createSessionStorage<T extends Record<string, unknown>>(
     if (id) {
       const entry = await store.get(id);
       if (entry) {
-        return new TavoSession<T>(id, { ...entry.data }, false, secure);
+        return new TavoSession<T>(id, cloneSessionData(entry.data), false, secure);
       }
       await store.delete(id);
     }
@@ -320,6 +327,7 @@ export function createSessionStorage<T extends Record<string, unknown>>(
       return destroySession(session, commitOptions);
     }
 
+    const data = cloneSessionData(concrete.data);
     const previousId = concrete.id;
     if (concrete.rotated) {
       concrete.id = createSessionId();
@@ -329,7 +337,7 @@ export function createSessionStorage<T extends Record<string, unknown>>(
     const maxAge = commitOptions?.maxAge ?? cookie.maxAge;
     const expiresAt = typeof maxAge === "number" ? Date.now() + Math.max(0, maxAge) * 1000 : null;
     await store.set(concrete.id, {
-      data: { ...concrete.data },
+      data,
       expiresAt
     });
 

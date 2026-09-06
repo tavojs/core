@@ -38,7 +38,7 @@ export default function StreamingPage() {
         </p>
         <p className="tavo-muted">
           Progressive streaming is an SSR feature. In pure CSR mode these promise-backed
-          boundaries render their fallback UI instead of starting a client-side streaming workflow.
+          boundaries settle locally from fallback to their resolved, rejected, or timed-out UI.
         </p>
       </section>
 

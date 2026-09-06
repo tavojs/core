@@ -128,33 +128,62 @@ export function renderDocument(node: Child, options?: RenderDocumentOptions): st
 
 export function renderDocumentStream(node: Child, options?: RenderDocumentOptions): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
+  const abort = new AbortController();
+  let cancelled = false;
+  let parts: ReturnType<typeof createDocumentParts> | undefined;
+  let registry: StyleRegistry;
+  let chunks: ReturnType<typeof renderToProgressiveStringChunks> | undefined;
+  const cancel = async (reason?: unknown) => {
+    cancelled = true;
+    abort.abort(reason);
+    const pending = chunks;
+    chunks = undefined;
+    // return() can follow an in-flight next(); abort wakes that pending read first.
+    await pending?.return().catch(() => {});
+  };
   return new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const registry = options?.styleRegistry ?? createStyleRegistry();
-      const seoRegistry = createSeoRegistry();
-      options?.beforeRender?.();
-      withStyleRegistry(registry, () =>
-        withSeoRegistry(seoRegistry, () => renderToString(node))
-      );
-      const parts = createDocumentParts(
-        "",
-        options,
-        renderStyleTags(registry, { nonce: options?.nonce }),
-        seoRegistry
-      );
-      controller.enqueue(encoder.encode(parts.head));
-      for await (const chunk of renderToProgressiveStringChunks(node, {
-        nonce: options?.nonce,
-        beforeRender: options?.beforeRender,
-        styleRegistry: registry
-      })) {
+    async pull(controller) {
+      if (cancelled) return;
+      try {
+        if (!parts) {
+          registry = options?.styleRegistry ?? createStyleRegistry();
+          const seoRegistry = createSeoRegistry();
+          options?.beforeRender?.();
+          withStyleRegistry(registry, () =>
+            withSeoRegistry(seoRegistry, () => renderToString(node))
+          );
+          if (cancelled) return;
+          parts = createDocumentParts(
+            "", options, renderStyleTags(registry, { nonce: options?.nonce }), seoRegistry
+          );
+          controller.enqueue(encoder.encode(parts.head));
+          return;
+        }
+        chunks ??= renderToProgressiveStringChunks(node, {
+          nonce: options?.nonce,
+          beforeRender: options?.beforeRender,
+          styleRegistry: registry,
+          signal: abort.signal
+        });
+        const chunk = await chunks.next();
+        if (cancelled) return;
+        if (chunk.done) {
+          controller.enqueue(encoder.encode(parts.tail));
+          controller.close();
+          chunks = undefined;
+          return;
+        }
         options?.beforeRender?.();
-        controller.enqueue(encoder.encode(chunk));
+        if (!cancelled) controller.enqueue(encoder.encode(chunk.value));
+      } catch (error) {
+        if (!cancelled) {
+          controller.error(error);
+          await cancel(error);
+        }
       }
-      controller.enqueue(encoder.encode(parts.tail));
-      controller.close();
-    }
-  });
+    },
+    cancel
+  }, { highWaterMark: 0 });
 }
 
 function isServerRuntime(): boolean {

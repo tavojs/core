@@ -434,6 +434,12 @@ Every plugin-handled request creates an isolated request scope:
 Concurrent requests never share request-scoped capability values. Runtime-scoped capabilities and
 stores are shared only within one application runtime.
 
+Concurrent resolutions share pending factories. Capability dependency cycles fail instead of
+waiting indefinitely, and failed factories can be retried. Disposal runs once, attempts every
+registered cleanup, and reports an `AggregateError` if callbacks fail. A disposed scope or runtime
+rejects new resolutions. Pending factories do not delay disposal; any value they produce later
+is disposed and its resolution rejects.
+
 Plugin endpoint failures are wrapped as safe `TAVO_PLUGIN_009` errors. Raw causes remain available
 to trusted diagnostics through error chaining but are not exposed as HTTP response details by the
 plugin dispatcher.

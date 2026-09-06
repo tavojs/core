@@ -1,22 +1,15 @@
 import { Fragment, type Child, type Component, type VNode } from "../../jsx.js";
 import { withoutDependencyCollector } from "../../reactivity.js";
-import {
-  CONTEXT_PROVIDER,
-  ERROR_BOUNDARY,
-  type ErrorBoundaryFallback
-} from "../../components/index.js";
+import { CONTEXT_PROVIDER, ERROR_BOUNDARY, type ErrorBoundaryFallback } from "../../components/index.js";
 import { removeMounted } from "./cleanup.js";
-import {
-  emitTrace,
-  shouldEmitTrace,
-  shouldTrackHydrationDetails
-} from "./diagnostics-core.js";
+import { emitTrace, shouldEmitTrace, shouldTrackHydrationDetails } from "./diagnostics-core.js";
 import { patchProps } from "./props.js";
 import { assignDomRef, clearDomRef } from "../../refs/index.js";
 import type {
   HydrateResult,
   MountedComponent,
   MountedErrorBoundary,
+  MountedElement,
   MountedFragment,
   MountedNode,
   MountedProvider,
@@ -33,7 +26,7 @@ import {
 } from "./child-utils.js";
 import { applyElementLifecycleDirectives, createDomElement } from "./dom-helpers.js";
 import { reconcileChildList as reconcileChildListWithOperations } from "./reconciler/children.js";
-import { emptyEnv, type RenderEnv, type ReconcilerOperations } from "./reconciler/context.js";
+import { emptyEnv, trackMountedNode, type RenderEnv, type ReconcilerOperations } from "./reconciler/context.js";
 import {
   mountComponent as mountComponentWithOperations,
   mountErrorBoundary as mountErrorBoundaryWithOperations,
@@ -43,16 +36,10 @@ import {
 import { hydrateNodeProd as hydrateNodeProdWithOperations } from "./reconciler/hydration/prod.js";
 import { hydrateNodeDetailed } from "./reconciler/hydration/detailed.js";
 
-function replaceMounted(
-  parent: Node,
-  previous: MountedNode,
-  nextChild: Child,
-  env: RenderEnv
-): MountedNode {
+function replaceMounted(parent: Node, previous: MountedNode, nextChild: Child, env: RenderEnv): MountedNode {
   const before = previous.end.nextSibling;
   removeMounted(parent, previous);
-  const mounted = mountNode(parent, before, nextChild, env);
-  return mounted;
+  return mountNode(parent, before, nextChild, env);
 }
 
 const reconcilerOperations: ReconcilerOperations = {
@@ -69,14 +56,7 @@ function reconcileChildList(
   before: Node | null,
   env: RenderEnv
 ): MountedNode[] {
-  return reconcileChildListWithOperations(
-    parent,
-    previous,
-    nextChildren,
-    before,
-    env,
-    reconcilerOperations
-  );
+  return reconcileChildListWithOperations(parent, previous, nextChildren, before, env, reconcilerOperations);
 }
 
 function mountFragment(
@@ -120,47 +100,43 @@ function mountComponent(
   return mountComponentWithOperations(parent, before, type, props, key, env, reconcilerOperations);
 }
 
-function hydrateNodeProd(
-  parent: Node,
-  cursor: Node | null,
-  child: Child,
-  env: RenderEnv = emptyEnv
-): HydrateResult {
-  return hydrateNodeProdWithOperations(parent, cursor, child, env, reconcilerOperations);
+function hydrateNodeProd(parent: Node, cursor: Node | null, child: Child, env: RenderEnv = emptyEnv): HydrateResult {
+  const result = hydrateNodeProdWithOperations(parent, cursor, child, env, reconcilerOperations);
+  trackMountedNode(env, result.mounted);
+  return result;
 }
 
-export function mountNode(
-  parent: Node,
-  before: Node | null,
-  child: Child,
-  env: RenderEnv = emptyEnv
-): MountedNode {
+export function mountNode(parent: Node, before: Node | null, child: Child, env: RenderEnv = emptyEnv): MountedNode {
   if (shouldEmitTrace()) {
-    emitTrace({ phase: "mount", kind: childKindLabel(child), key: getChildKey(child) });
+    emitTrace({
+      phase: "mount",
+      kind: childKindLabel(child),
+      key: getChildKey(child)
+    });
   }
 
   if (child === null || child === undefined || child === false || child === true) {
     const marker = createAnchor();
     parent.insertBefore(marker, before);
-    return {
+    return trackMountedNode(env, {
       kind: "empty",
       key: null,
       start: marker,
       end: marker
-    };
+    });
   }
 
   if (typeof child === "string" || typeof child === "number") {
     const text = document.createTextNode(String(child));
     parent.insertBefore(text, before);
-    return {
+    return trackMountedNode(env, {
       kind: "text",
       key: null,
       start: text,
       end: text,
       node: text,
       value: String(child)
-    };
+    });
   }
 
   if (Array.isArray(child)) {
@@ -190,14 +166,7 @@ export function mountNode(
 
   const element = createDomElement(parent, child.type as string);
   parent.insertBefore(element, before);
-  patchProps(element, {}, child.props);
-
-  const children = normalizeChildren(child.props.children);
-  const mountedChildren = reconcileChildList(element, [], children, null, env);
-  assignDomRef(child.props.ref, element);
-  const directivesCleanup = applyElementLifecycleDirectives(element, child.props);
-
-  return {
+  const mounted: MountedElement = trackMountedNode(env, {
     kind: "element",
     key,
     start: element,
@@ -205,9 +174,17 @@ export function mountNode(
     node: element,
     tag: child.type as string,
     props: child.props,
-    children: mountedChildren,
-    directivesCleanup
-  };
+    children: [],
+    directivesCleanup: null
+  });
+  patchProps(element, {}, child.props);
+
+  const children = normalizeChildren(child.props.children);
+  mounted.children = reconcileChildList(element, [], children, null, env);
+  assignDomRef(child.props.ref, element);
+  mounted.directivesCleanup = applyElementLifecycleDirectives(element, child.props);
+
+  return mounted;
 }
 
 export function patchNode(
@@ -217,7 +194,11 @@ export function patchNode(
   env: RenderEnv = emptyEnv
 ): MountedNode {
   if (shouldEmitTrace()) {
-    emitTrace({ phase: "patch", kind: childKindLabel(nextChild), key: getChildKey(nextChild) });
+    emitTrace({
+      phase: "patch",
+      kind: childKindLabel(nextChild),
+      key: getChildKey(nextChild)
+    });
   }
 
   if (nextChild === null || nextChild === undefined || nextChild === false || nextChild === true) {
@@ -253,6 +234,10 @@ export function patchNode(
   }
 
   const key = getChildKey(nextChild);
+
+  if (!Object.is(previous.key, key)) {
+    return replaceMounted(parent, previous, nextChild, env);
+  }
 
   if (typeof nextChild.type === "function") {
     if (previous.kind !== "component" || previous.type !== nextChild.type) {
@@ -407,7 +392,7 @@ export function hydrateNode(
     });
   }
 
-  return hydrateNodeDetailed(
+  const result = hydrateNodeDetailed(
     parent,
     cursor,
     child,
@@ -417,4 +402,6 @@ export function hydrateNode(
     env,
     reconcilerOperations
   );
+  trackMountedNode(env, result.mounted);
+  return result;
 }

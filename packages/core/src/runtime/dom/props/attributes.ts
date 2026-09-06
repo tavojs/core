@@ -173,11 +173,11 @@ function removeProp(el: Element, key: string): void {
   if (isInternalProp(key)) {
     return;
   }
-  if (!isSafeAttributeName(key)) {
-    return;
-  }
   if (key.startsWith("on")) {
     removeDelegatedListener(el, key);
+    return;
+  }
+  if (!isSafeAttributeName(key)) {
     return;
   }
   if (key === "className" || key === "class") {

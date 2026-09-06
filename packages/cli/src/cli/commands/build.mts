@@ -81,7 +81,7 @@ export function createClientAssetPlan(
       ? "src/main.tsx"
       : Object.entries(manifest).find(([, item]) => item?.isEntry)?.[0];
   const entry = entryKey ? manifest[entryKey] : undefined;
-  const sharedCss = Array.from(new Set(entry?.css ?? []));
+  const sharedCss = Array.from(new Set(entryKey ? collectManifestCss(manifest, entryKey) : []));
   const sharedCssSet = new Set(sharedCss);
   const moduleCss: Record<string, string[]> = {};
 

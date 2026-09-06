@@ -1,23 +1,16 @@
 import type { Child, Component, VNode } from "../../../jsx.js";
+import { withDependencyCollector, type StoreDependency } from "../../../reactivity.js";
+import { type ErrorBoundaryFallback, type TavoContext } from "../../../components/index.js";
 import {
-  withDependencyCollector,
-  type StoreDependency
-} from "../../../reactivity.js";
-import {
-  type ErrorBoundaryFallback,
-  type TavoContext
-} from "../../../components/index.js";
-import {
+  beginComponentRender,
   createComponentRuntimeState,
   runLayoutTasks,
+  runComponentRenderFinalizers,
   schedulePassiveTasks,
   withActiveComponent
 } from "../component-runtime.js";
 import { getDependencyKey, reconcileDependencies } from "../dependencies.js";
-import {
-  reportRuntimeError,
-  showConfiguredDevOverlay
-} from "../diagnostics-core.js";
+import { reportRuntimeError, showConfiguredDevOverlay } from "../diagnostics-core.js";
 import { scheduleComponent } from "../scheduler.js";
 import { childToArray } from "../child-utils.js";
 import { createAnchor } from "../utils.js";
@@ -29,31 +22,38 @@ import type {
   MountedProvider,
   RootDependencySubscription
 } from "../types.js";
-import type { MountOperations, RenderEnv } from "./context.js";
+import {
+  beginRootRenderScope,
+  reportUnhandledRenderError,
+  trackMountedNode,
+  type MountOperations,
+  type RenderEnv
+} from "./context.js";
 
-export function resolveBoundaryFallback(
-  fallback: ErrorBoundaryFallback,
-  error: unknown
-): Child {
+export function resolveBoundaryFallback(fallback: ErrorBoundaryFallback, error: unknown): Child {
   if (typeof fallback === "function") {
     return (fallback as (value: unknown) => Child)(error);
   }
   return fallback;
 }
 
-export function captureError(boundary: MountedErrorBoundary | null, error: unknown): void {
+export function captureError(
+  boundary: MountedErrorBoundary | null,
+  error: unknown,
+  context?: Map<symbol, unknown>
+): void {
   if (boundary) {
     boundary.captureError(error);
+    return;
+  }
+  if (context && reportUnhandledRenderError(context, error)) {
     return;
   }
   reportRuntimeError(error);
   showConfiguredDevOverlay(error);
 }
 
-export function initializeBoundaryRuntime(
-  boundary: MountedErrorBoundary,
-  operations: MountOperations
-): void {
+export function initializeBoundaryRuntime(boundary: MountedErrorBoundary, operations: MountOperations): void {
   const renderBoundary = (): void => {
     const parentNode = boundary.start.parentNode;
     if (!parentNode) {
@@ -61,9 +61,7 @@ export function initializeBoundaryRuntime(
     }
 
     const nextChild =
-      boundary.error === null
-        ? boundary.children
-        : resolveBoundaryFallback(boundary.fallback, boundary.error);
+      boundary.error === null ? boundary.children : resolveBoundaryFallback(boundary.fallback, boundary.error);
 
     try {
       if (boundary.child) {
@@ -78,7 +76,7 @@ export function initializeBoundaryRuntime(
         });
       }
     } catch (error) {
-      captureError(boundary.parentBoundary, error);
+      captureError(boundary.parentBoundary, error, boundary.context);
     }
   };
 
@@ -89,17 +87,15 @@ export function initializeBoundaryRuntime(
   boundary.renderBoundary = renderBoundary;
 }
 
-export function runComponentRender(
-  component: MountedComponent,
-  parentNode: Node,
-  operations: MountOperations
-): void {
+export function runComponentRender(component: MountedComponent, parentNode: Node, operations: MountOperations): void {
   if (component.isRendering) {
     component.queued = true;
     return;
   }
 
   component.isRendering = true;
+  beginComponentRender(component);
+  const finishRootScope = beginRootRenderScope(component.context);
   try {
     const dependenciesByKey = new Map<string, StoreDependency>();
     const output = withActiveComponent(component, () =>
@@ -131,9 +127,11 @@ export function runComponentRender(
     runLayoutTasks(component);
     schedulePassiveTasks(component);
   } catch (error) {
-    captureError(component.boundary, error);
+    captureError(component.boundary, error, component.context);
   } finally {
     component.isRendering = false;
+    runComponentRenderFinalizers(component);
+    finishRootScope?.();
   }
 
   if (component.queued) {
@@ -155,18 +153,18 @@ export function mountFragment(
   parent.insertBefore(start, before);
   parent.insertBefore(end, before);
 
-  const mountedChildren: MountedNode[] = [];
-  for (const child of children) {
-    mountedChildren.push(operations.mountNode(parent, end, child, env));
-  }
-
-  return {
+  const fragment: MountedFragment = trackMountedNode(env, {
     kind: "fragment",
     key,
     start,
     end,
-    children: mountedChildren
-  };
+    children: []
+  });
+  for (const child of children) {
+    fragment.children.push(operations.mountNode(parent, end, child, env));
+  }
+
+  return fragment;
 }
 
 export function mountProvider(
@@ -198,6 +196,7 @@ export function mountProvider(
     context: providerContext,
     boundary: env.boundary
   };
+  trackMountedNode(env, provider);
 
   const rendered = childToArray(node.props.children ?? []);
   provider.child = operations.mountNode(parent, provider.end, rendered, {
@@ -235,6 +234,7 @@ export function mountErrorBoundary(
     captureError: () => {},
     renderBoundary: () => {}
   };
+  trackMountedNode(env, boundary);
 
   initializeBoundaryRuntime(boundary, operations);
   boundary.renderBoundary();
@@ -274,6 +274,7 @@ export function mountComponent(
     performRender: () => {},
     rerender: () => {}
   };
+  trackMountedNode(env, component);
 
   component.performRender = () => {
     const parentNode = component.start.parentNode;

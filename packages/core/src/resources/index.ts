@@ -5,6 +5,8 @@ export type { Resource, ResourceState } from "./types.js";
 
 function waitForResource<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
   if (signal.aborted) {
+    // A loader can abort synchronously before returning a rejected operation.
+    void operation.catch(() => undefined);
     return Promise.reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
   }
   return new Promise<T>((resolve, reject) => {
@@ -55,6 +57,7 @@ export function createResource<T>(
     const currentLoadId = ++loadId;
     store.patch({ status: "loading", error: null });
     try {
+      currentController.signal.throwIfAborted();
       const operation = Promise.resolve(loader({ signal: currentController.signal }));
       const data = await waitForResource(operation, currentController.signal);
       if (loadId !== currentLoadId) {
@@ -109,7 +112,13 @@ export function createResource<T>(
     load,
     preload(options) {
       if (!pending) {
-        pending = load(options);
+        const current = load(options);
+        pending = current;
+        const clear = () => {
+          if (pending === current) pending = null;
+        };
+        // Even a synchronous loader failure finishes after preload assigns pending.
+        void current.then(clear, clear);
       }
       return pending;
     },

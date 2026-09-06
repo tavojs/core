@@ -23,7 +23,7 @@ runners report target misses without failing because shared CPU and filesystem c
 absolute wall-clock limits nondeterministic. Set `TAVO_ENFORCE_PERFORMANCE=1` on controlled CI
 hardware to enforce the local limits there too.
 
-## Live Models
+## Optional Live Model Experiments
 
 Live adapters export a provider-neutral contract:
 
@@ -46,12 +46,9 @@ export async function runTask(task) {
 ```
 
 Run an adapter with `npm --workspace @tavojs/cli run eval:live -- ./adapter.mjs report.json`.
-Use at least two model/tool ecosystems nightly and before a release. Credentials and provider SDKs
-belong to the adapter, not Tavo.js.
-
-The included GitHub workflow reads repository-relative adapter modules from
-`TAVO_AGENT_ADAPTER_A` and `TAVO_AGENT_ADAPTER_B`, with credentials supplied through the matching
-`TAVO_AGENT_API_KEY_A` and `TAVO_AGENT_API_KEY_B` secrets. It rejects missing or duplicate adapters.
+The adapter owns its credentials and provider SDKs. This harness is opt-in and is not part of the
+automated CI or release gates. When comparing model or tool ecosystems, run at least two adapters
+against the same corpus and retain their JSON reports outside the repository.
 
 ## Release Thresholds
 
@@ -59,5 +56,5 @@ The included GitHub workflow reads repository-relative adapter modules from
 - Success after one repair cycle: at least 95%.
 - Headline efficiency: successful tasks per 10,000 total input and output tokens.
 
-Offline checks run on every pull request. Live results are repeated and trended so one
-nondeterministic run does not block development; release certification uses the aggregate threshold.
+Offline checks run on every pull request. Live model results are experimental and must not block
+development or releases unless a separately maintained evaluation system aggregates repeated runs.

@@ -1,4 +1,4 @@
-function getEventPath(target: EventTarget | null): Element[] {
+function getEventPath(target: EventTarget | null, targetOnly: boolean): Element[] {
   const path: Element[] = [];
   let current =
     typeof Element !== "undefined" && target instanceof Element
@@ -8,6 +8,7 @@ function getEventPath(target: EventTarget | null): Element[] {
         : null;
   while (current) {
     path.push(current);
+    if (targetOnly) break;
     current = current.parentElement;
   }
   return path;
@@ -51,6 +52,9 @@ export function createDelegatedEvent(event: Event, currentTarget: Element): Even
     defineForwardedGetter(delegated, "shiftKey", () => event.shiftKey);
     defineForwardedGetter(delegated, "altKey", () => event.altKey);
     defineForwardedGetter(delegated, "detail", () => event.detail);
+  }
+
+  if ("relatedTarget" in event) {
     defineForwardedGetter(delegated, "relatedTarget", () => event.relatedTarget);
   }
 
@@ -90,9 +94,10 @@ export function createDelegatedEvent(event: Event, currentTarget: Element): Even
 export function dispatchDelegatedEvent(
   eventName: string,
   event: Event,
-  handlersByElement: WeakMap<Element, Map<string, EventListener>>
+  handlersByElement: WeakMap<Element, Map<string, EventListener>>,
+  targetOnly = false
 ): void {
-  const path = getEventPath(event.target);
+  const path = getEventPath(event.target, targetOnly);
   for (const node of path) {
     const handlers = handlersByElement.get(node);
     const handler = handlers?.get(eventName);

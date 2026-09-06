@@ -1,4 +1,5 @@
 import path from "node:path";
+import { resolveDirectoryPaths } from "./directories.js";
 import { isPagesModule, stripQuery } from "./route-server-exports/lexical.js";
 import {
   applyReplacements,
@@ -9,18 +10,18 @@ import {
   overlapsAny
 } from "./route-server-exports/transforms.js";
 
-export function createRouteServerExportsPlugin() {
-  let root = process.cwd();
+export function createRouteServerExportsPlugin(pagesDir = "src/pages") {
+  let directories = resolveDirectoryPaths(path.resolve(process.cwd(), pagesDir));
   return {
     name: "tavo:route-server-exports",
     enforce: "pre" as const,
     configResolved(config: { root?: string }) {
-      root = path.resolve(config.root ?? process.cwd());
+      directories = resolveDirectoryPaths(path.resolve(config.root ?? process.cwd(), pagesDir));
     },
     transform(code: string, id: string, options?: { ssr?: boolean }) {
       if (options?.ssr) return null;
       const file = stripQuery(id);
-      if (!isPagesModule(file, root)) return null;
+      if (!directories.some((directory) => isPagesModule(file, directory, "."))) return null;
 
       const serverOnlyExports = collectServerOnlyRouteExportReplacements(code);
       const runtimeBranches = collectClientRuntimeBranchReplacements(code).filter(

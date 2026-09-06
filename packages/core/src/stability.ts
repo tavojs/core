@@ -18,6 +18,7 @@ export const TAVO_API_STABILITY = Object.freeze({
   "@tavojs/core/jsx-runtime": { level: "stable", since: "1.0", note: "JSX transform runtime." },
   "@tavojs/core/plugin": { level: "stable", since: "1.0", note: "Plugin graph and runtime APIs." },
   "@tavojs/core/router": { level: "stable", since: "1.0", note: "Routing, navigation, and route module APIs." },
+  "@tavojs/core/runtime": { level: "stable", since: "1.0.4", note: "Focused browser rendering and template APIs." },
   "@tavojs/core/server": { level: "stable", since: "1.0", note: "Node rendering, sessions, and server utilities." },
   "@tavojs/core/server-only": { level: "stable", since: "1.0", note: "Server-only module boundary marker." },
 } satisfies Record<string, ApiStabilityEntry>);

@@ -1,16 +1,8 @@
 import type { Child } from "../../../jsx.js";
 import { removeMounted } from "../cleanup.js";
 import { getDomRuntimeConfig } from "../config.js";
-import {
-  assertStrictKeys,
-  getChildKey,
-  hasAnyKey
-} from "../child-utils.js";
-import {
-  isNonDecreasing,
-  longestIncreasingSubsequence,
-  moveMountedRange
-} from "../mounted-ranges.js";
+import { assertStrictKeys, assertUniqueKeys, getChildKey, hasAnyKey } from "../child-utils.js";
+import { isNonDecreasing, longestIncreasingSubsequence, moveMountedRange } from "../mounted-ranges.js";
 import type { MountedNode } from "../types.js";
 import type { MountOperations, RenderEnv } from "./context.js";
 
@@ -57,6 +49,7 @@ export function reconcileChildList(
   if (runtime.keyedStrategy === "strict") {
     assertStrictKeys(nextChildren);
   }
+  assertUniqueKeys(nextChildren);
 
   if (previous.length === nextChildren.length) {
     let stableByKey = true;

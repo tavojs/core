@@ -116,7 +116,7 @@ async function withTavoPluginViteConfig<T extends TavoViteConfig>(config: T, env
   const define = resolved.define && typeof resolved.define === "object"
     ? resolved.define as Record<string, unknown>
     : {};
-  return {
+  return withTavoViteDefaults({
     ...resolved,
     define: {
       ...define,
@@ -124,12 +124,13 @@ async function withTavoPluginViteConfig<T extends TavoViteConfig>(config: T, env
         tavoConfig.routing?.trailingSlash ?? "preserve",
       ),
     },
-  } as T;
+  } as T, tavoConfig.pagesDir);
 }
 
 /** Applies Tavo.js's JSX runtime settings to a plain Vite config object. */
 function withTavoViteDefaults<T extends TavoViteConfig>(
   config: T,
+  pagesDir?: string,
 ): T & {
   esbuild: ViteEsbuildOptions & {
     jsx: "automatic";
@@ -143,7 +144,7 @@ function withTavoViteDefaults<T extends TavoViteConfig>(
   return {
     ...withAliases,
     plugins: [
-      createRouteServerExportsPlugin(),
+      createRouteServerExportsPlugin(pagesDir),
       createServerOnlyGuardPlugin(),
       createSvgComponentPlugin(),
       createI18nSplitPlugin(),
@@ -173,13 +174,13 @@ export function defineTavoViteConfig(config: TavoViteConfigExport = {}): TavoVit
       const result = config(env);
 
       return isPromiseLike(result)
-        ? result.then((resolved) => withTavoPluginViteConfig(resolved, env)).then(withTavoViteDefaults)
-        : withTavoPluginViteConfig(result, env).then(withTavoViteDefaults);
+        ? result.then((resolved) => withTavoPluginViteConfig(resolved, env))
+        : withTavoPluginViteConfig(result, env);
     };
   }
 
   const env: TavoViteConfigEnv = {};
   return isPromiseLike(config)
-    ? config.then((resolved) => withTavoPluginViteConfig(resolved, env)).then(withTavoViteDefaults)
-    : withTavoPluginViteConfig(config, env).then(withTavoViteDefaults);
+    ? config.then((resolved) => withTavoPluginViteConfig(resolved, env))
+    : withTavoPluginViteConfig(config, env);
 }

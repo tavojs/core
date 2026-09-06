@@ -12,6 +12,7 @@ export type SessionCookieOptions = {
 };
 
 export type SessionStoreEntry<T extends Record<string, unknown>> = {
+  /** Session snapshots support structured-cloneable data, including nested objects. */
   data: T;
   expiresAt: number | null;
 };
