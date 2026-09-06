@@ -22,6 +22,8 @@
   load application routing or file-based page discovery. Its browser store avoids server snapshot
   globals, and Deferred settles through the component lifecycle without importing the MVC layer.
 
+  Ensure remote image body timeouts settle reliably across supported Node.js versions.
+
 ## 1.0.3
 
 ### Patch Changes

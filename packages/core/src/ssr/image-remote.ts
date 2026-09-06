@@ -182,7 +182,11 @@ async function requestRemoteImage(
   });
 }
 
-async function readResponseWithLimit(response: import("node:http").IncomingMessage, maxBytes: number): Promise<Buffer> {
+async function readResponseWithLimit(
+  response: import("node:http").IncomingMessage,
+  maxBytes: number,
+  signal: AbortSignal
+): Promise<Buffer> {
   const contentLength = response.headers["content-length"];
   if (contentLength && Number(contentLength) > maxBytes) {
     response.destroy();
@@ -192,16 +196,28 @@ async function readResponseWithLimit(response: import("node:http").IncomingMessa
   const chunks: Buffer[] = [];
   let received = 0;
   let complete = false;
+  let onAbort: () => void = () => {};
   try {
-    for await (const chunk of response) {
-      received += chunk.byteLength;
-      if (received > maxBytes) {
-        throw new Error("tavo image: remote image exceeded the configured maxBytes limit.");
-      }
-      chunks.push(chunk);
-    }
-    complete = true;
+    signal.throwIfAborted();
+    await Promise.race([
+      (async () => {
+        for await (const chunk of response) {
+          received += chunk.byteLength;
+          if (received > maxBytes) {
+            throw new Error("tavo image: remote image exceeded the configured maxBytes limit.");
+          }
+          chunks.push(chunk);
+        }
+        complete = true;
+      })(),
+      new Promise<never>((_resolve, reject) => {
+        onAbort = () => reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+        signal.addEventListener("abort", onAbort, { once: true });
+        if (signal.aborted) onAbort();
+      })
+    ]);
   } finally {
+    signal.removeEventListener("abort", onAbort);
     if (!complete) {
       response.destroy();
     }
@@ -240,7 +256,7 @@ export async function fetchRemoteImageWithLimit(
         response.destroy();
         throw new Error(`tavo image: failed to fetch remote image (${status}).`);
       }
-      return await readResponseWithLimit(response, options.maxBytes);
+      return await readResponseWithLimit(response, options.maxBytes, controller.signal);
     } finally {
       clearTimeout(timeout);
     }
