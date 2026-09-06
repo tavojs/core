@@ -273,7 +273,7 @@ const handler = createNodeRequestHandler({
 });
 ```
 
-The cache entry contains the rendered response, `expiresAt`, and `tags`, so adapters can map it to Redis, platform KV, or an edge cache. Handler-level invalidation also tracks keys written during the current process and falls back to deleting those keys when an adapter has no native tag index.
+The cache entry contains the rendered response, `expiresAt`, and `tags`, so adapters can map it to Redis, platform KV, or an edge cache. Adapters implementing both `invalidateTags` and `clear` own their invalidation metadata. For other adapters, the handler tracks at most 1,024 keys and deletes an old stored entry before discarding its metadata. A failed eviction skips the new cache write while still returning the rendered response.
 
 ## `Image` And SSR
 

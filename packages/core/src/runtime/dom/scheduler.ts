@@ -11,6 +11,7 @@ const priorityRank: Record<UpdatePriority, number> = {
 };
 
 const queuedComponents = new Map<MountedComponent, UpdatePriority>();
+const queuedPriorityCounts = [0, 0, 0, 0, 0];
 let currentPriority: UpdatePriority = "normal";
 let microtaskScheduled = false;
 let backgroundScheduled = false;
@@ -25,6 +26,7 @@ function flushThrough(maximumRank: number): void {
         continue;
       }
       queuedComponents.delete(item);
+      queuedPriorityCounts[priorityRank[priority]] -= 1;
       if (!item.unmounted) {
         item.performRender();
       }
@@ -35,10 +37,9 @@ function flushThrough(maximumRank: number): void {
 }
 
 function scheduleRemainingWork(): void {
-  let bestRank = Number.POSITIVE_INFINITY;
-  for (const priority of queuedComponents.values()) {
-    bestRank = Math.min(bestRank, priorityRank[priority]);
-  }
+  // The number of priority levels is fixed, so enqueueing never scans the queue.
+  const bestRank = queuedPriorityCounts.findIndex((count) => count > 0);
+  if (bestRank === -1) return;
   if (bestRank <= priorityRank.normal && !microtaskScheduled) {
     microtaskScheduled = true;
     queueMicrotask(() => {
@@ -75,7 +76,9 @@ export function scheduleComponent(component: MountedComponent): void {
   }
   const queuedPriority = queuedComponents.get(component);
   if (!queuedPriority || priorityRank[currentPriority] < priorityRank[queuedPriority]) {
+    if (queuedPriority) queuedPriorityCounts[priorityRank[queuedPriority]] -= 1;
     queuedComponents.set(component, currentPriority);
+    queuedPriorityCounts[priorityRank[currentPriority]] += 1;
   }
   scheduleRemainingWork();
 }
@@ -105,7 +108,10 @@ export function getCurrentUpdatePriority(): UpdatePriority {
 }
 
 export function cancelScheduledComponent(component: MountedComponent): void {
-  queuedComponents.delete(component);
+  const priority = queuedComponents.get(component);
+  if (priority && queuedComponents.delete(component)) {
+    queuedPriorityCounts[priorityRank[priority]] -= 1;
+  }
 }
 
 export function getScheduledUpdateCount(): number {

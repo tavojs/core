@@ -56,5 +56,14 @@ export function createPreviewRoutingSource(options: PreviewRoutingOptions): stri
     "    : pathname.replace(/\\/+$/, \"\") || \"/\";",
     "  return canonicalPathname === pathname ? null : `${canonicalPathname}${url.search}`;",
     "}",
+    "function resolveAssetPaths(url) {",
+    "  const segments = safePathSegments(url.pathname);",
+    "  if (!segments || segments.length === 0) return [];",
+    "  const candidates = [",
+    "    path.resolve(clientRoot, ...segments),",
+    "    path.resolve(clientRoot, ...segments, \"index.html\")",
+    "  ];",
+    "  return candidates.filter((resolved) => resolved === clientRoot || resolved.startsWith(`${clientRoot}${path.sep}`));",
+    "}",
   ];
 }

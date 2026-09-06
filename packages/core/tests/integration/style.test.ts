@@ -4,12 +4,13 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { JSDOM } from "jsdom";
-import { h } from "../../src/index.tsx";
+import { createRoot, h } from "../../src/index.tsx";
 import { renderPagesResponseAsync } from "../../src/framework/index.ts";
 import { renderDocument, renderDocumentStream } from "../../src/server.ts";
 import {
   createStyleRegistry,
   ensureClientStyle,
+  retainClientStyle,
   renderStyleTags,
   style,
   withStyleRegistry
@@ -115,16 +116,71 @@ test("ensureClientStyle dedupes existing server-rendered style tags", () => {
   }
 });
 
+test("ensureClientStyle scans hydrated styles once per document", () => {
+  const dom = new JSDOM("<!doctype html><html><head><style data-tavo-style=\"demo.card\">.card{color:red}</style></head><body></body></html>");
+  const previousDocument = globalThis.document;
+  const head = dom.window.document.head;
+  const querySelectorAll = head.querySelectorAll.bind(head);
+  let queryCount = 0;
+  head.querySelectorAll = ((selectors: string) => {
+    queryCount += 1;
+    return querySelectorAll(selectors);
+  }) as typeof head.querySelectorAll;
+  (globalThis as { document?: Document }).document = dom.window.document;
+  try {
+    for (let index = 0; index < 1_000; index += 1) {
+      ensureClientStyle("demo.card", ".card{color:red}");
+    }
+
+    assert.equal(queryCount, 1);
+    assert.equal(dom.window.document.querySelectorAll("style[data-tavo-style='demo.card']").length, 1);
+  } finally {
+    if (previousDocument === undefined) {
+      delete (globalThis as { document?: Document }).document;
+    } else {
+      (globalThis as { document?: Document }).document = previousDocument;
+    }
+  }
+});
+
+test("ensureClientStyle recreates a disconnected cached style", () => {
+  const dom = new JSDOM("<!doctype html><html><head></head><body></body></html>");
+  const previousDocument = globalThis.document;
+  (globalThis as { document?: Document }).document = dom.window.document;
+  try {
+    ensureClientStyle("demo.card", ".card{color:red}");
+    const first = dom.window.document.querySelector("style[data-tavo-style='demo.card']");
+    assert.ok(first);
+    first.remove();
+
+    ensureClientStyle("demo.card", ".card{color:blue}");
+
+    const second = dom.window.document.querySelector("style[data-tavo-style='demo.card']");
+    assert.ok(second);
+    assert.notEqual(second, first);
+    assert.equal(second.textContent, ".card{color:blue}");
+    assert.equal(dom.window.document.querySelectorAll("style[data-tavo-style='demo.card']").length, 1);
+  } finally {
+    if (previousDocument === undefined) {
+      delete (globalThis as { document?: Document }).document;
+    } else {
+      (globalThis as { document?: Document }).document = previousDocument;
+    }
+  }
+});
+
 test("ensureClientStyle repairs stale server-rendered style CSS", () => {
   const dom = new JSDOM("<!doctype html><html><head><style data-tavo-style=\"demo.responsive\"></style></head><body></body></html>");
   const previousDocument = globalThis.document;
   (globalThis as { document?: Document }).document = dom.window.document;
   try {
+    const original = dom.window.document.head.querySelector("style[data-tavo-style='demo.responsive']");
     ensureClientStyle("demo.responsive", ".demo{display:none}");
 
     const styleTags = dom.window.document.head.querySelectorAll("style");
     const styleTag = styleTags[0];
     assert.equal(styleTags.length, 1);
+    assert.equal(styleTag, original);
     assert.equal(styleTag.getAttribute("data-tavo-style"), "demo.responsive");
     assert.equal(styleTag.textContent, ".demo{display:none}");
   } finally {
@@ -141,10 +197,12 @@ test("ensureClientStyle preserves externalized prerender style markers", () => {
   const previousDocument = globalThis.document;
   (globalThis as { document?: Document }).document = dom.window.document;
   try {
+    const original = dom.window.document.head.querySelector("style[data-tavo-style='demo.external']");
     ensureClientStyle("demo.external", ".external{display:grid}");
 
     const styleTag = dom.window.document.head.querySelector("style[data-tavo-style='demo.external']");
     assert.ok(styleTag);
+    assert.equal(styleTag, original);
     assert.equal(styleTag.textContent, "");
     assert.equal(styleTag.hasAttribute("data-tavo-style-external"), true);
   } finally {
@@ -153,6 +211,135 @@ test("ensureClientStyle preserves externalized prerender style markers", () => {
     } else {
       (globalThis as { document?: Document }).document = previousDocument;
     }
+  }
+});
+
+test("retained client styles are owner-document scoped and reference counted", () => {
+  const dom = new JSDOM("<!doctype html><html><head></head><body></body></html>");
+  const firstRelease = retainClientStyle("runtime.shared", ".shared{display:block}", {
+    ownerDocument: dom.window.document
+  });
+  const secondRelease = retainClientStyle("runtime.shared", ".shared{display:block}", {
+    ownerDocument: dom.window.document
+  });
+
+  assert.equal(
+    dom.window.document.head.querySelectorAll("style[data-tavo-style='runtime.shared']").length,
+    1
+  );
+  firstRelease();
+  assert.equal(
+    dom.window.document.head.querySelectorAll("style[data-tavo-style='runtime.shared']").length,
+    1
+  );
+  secondRelease();
+  secondRelease();
+  assert.equal(
+    dom.window.document.head.querySelectorAll("style[data-tavo-style='runtime.shared']").length,
+    0
+  );
+});
+
+test("component-owned styles replace obsolete rules and dispose with the root", () => {
+  const dom = new JSDOM('<!doctype html><html><head></head><body><div id="app"></div></body></html>');
+  const previousDocument = globalThis.document;
+  const previousWindow = globalThis.window;
+  const previousNode = globalThis.Node;
+  (globalThis as { document?: Document }).document = dom.window.document;
+  (globalThis as { window?: Window }).window = dom.window as unknown as Window;
+  (globalThis as { Node?: typeof Node }).Node = dom.window.Node;
+
+  function Styled({ variant }: { variant: string }) {
+    style(`runtime.dynamic.${variant}`, `.${variant}{color:${variant}}`);
+    return h("p", { className: variant }, variant);
+  }
+
+  try {
+    const container = dom.window.document.querySelector("#app");
+    assert.ok(container);
+    const root = createRoot(container);
+    root.render(h(Styled, { variant: "red" }));
+    assert.equal(
+      dom.window.document.head.querySelectorAll("style[data-tavo-style^='runtime.dynamic.']").length,
+      1
+    );
+    assert.ok(dom.window.document.head.querySelector("style[data-tavo-style='runtime.dynamic.red']"));
+
+    root.render(h(Styled, { variant: "blue" }));
+    assert.equal(
+      dom.window.document.head.querySelectorAll("style[data-tavo-style^='runtime.dynamic.']").length,
+      1
+    );
+    assert.equal(
+      dom.window.document.head.querySelector("style[data-tavo-style='runtime.dynamic.red']"),
+      null
+    );
+    assert.ok(dom.window.document.head.querySelector("style[data-tavo-style='runtime.dynamic.blue']"));
+
+    root.unmount();
+    assert.equal(
+      dom.window.document.head.querySelectorAll("style[data-tavo-style^='runtime.dynamic.']").length,
+      0
+    );
+  } finally {
+    if (previousDocument === undefined) delete (globalThis as { document?: Document }).document;
+    else (globalThis as { document?: Document }).document = previousDocument;
+    if (previousWindow === undefined) delete (globalThis as { window?: Window }).window;
+    else (globalThis as { window?: Window }).window = previousWindow;
+    if (previousNode === undefined) delete (globalThis as { Node?: typeof Node }).Node;
+    else (globalThis as { Node?: typeof Node }).Node = previousNode;
+  }
+});
+
+test("shared component styles remain until the final keyed owner unmounts", () => {
+  const dom = new JSDOM('<!doctype html><html><head></head><body><div id="app"></div></body></html>');
+  const previousDocument = globalThis.document;
+  const previousWindow = globalThis.window;
+  const previousNode = globalThis.Node;
+  (globalThis as { document?: Document }).document = dom.window.document;
+  (globalThis as { window?: Window }).window = dom.window as unknown as Window;
+  (globalThis as { Node?: typeof Node }).Node = dom.window.Node;
+
+  function SharedStyle({ id }: { id: string }) {
+    style("runtime.shared-component", ".shared-component{display:block}");
+    return h("p", { "data-owner": id }, id);
+  }
+  const Owners = ({ ids }: { ids: string[] }) =>
+    h(
+      "div",
+      null,
+      ids.map((id) => h(SharedStyle, { id, key: id }))
+    );
+
+  try {
+    const container = dom.window.document.querySelector("#app");
+    assert.ok(container);
+    const root = createRoot(container);
+    root.render(h(Owners, { ids: ["one", "two"] }));
+    assert.equal(
+      dom.window.document.head.querySelectorAll("style[data-tavo-style='runtime.shared-component']").length,
+      1
+    );
+
+    root.render(h(Owners, { ids: ["two"] }));
+    assert.equal(
+      dom.window.document.head.querySelectorAll("style[data-tavo-style='runtime.shared-component']").length,
+      1
+    );
+
+    root.render(h(Owners, { ids: [] }));
+    assert.equal(
+      dom.window.document.head.querySelectorAll("style[data-tavo-style='runtime.shared-component']").length,
+      0
+    );
+    root.unmount();
+  } finally {
+    if (previousDocument === undefined) delete (globalThis as { document?: Document }).document;
+    else (globalThis as { document?: Document }).document = previousDocument;
+    if (previousWindow === undefined) delete (globalThis as { window?: Window }).window;
+    else (globalThis as { window?: Window }).window = previousWindow;
+    if (previousNode === undefined) delete (globalThis as { Node?: typeof Node }).Node;
+    else (globalThis as { Node?: typeof Node }).Node = previousNode;
   }
 });
 

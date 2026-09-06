@@ -1,5 +1,27 @@
 # @tavojs/core
 
+## 1.0.4
+
+### Patch Changes
+
+- edd7a19: Harden custom page module boundaries, remote image DNS connections, session snapshots,
+  cache metadata, generated production request handling, and CLI protected file checks.
+
+  Preserve deferred streaming updates, release removed event handlers and managed resources,
+  reject plugin capability cycles, and make resource retries and reentrant store notifications
+  reliable. Add computed store disposal and remove quadratic scheduler enqueue work.
+
+  Include transitive entry CSS in SSR output, honor configured production routing and alias
+  overrides, bound monitor history, and improve runtime benchmark isolation and coverage.
+
+  Add observable checked root commits with reliable partial-failure disposal, deterministic
+  key identity checks, browser-settling Deferred boundaries with cancellation cleanup, and
+  owner-document-scoped disposable style lifecycles.
+
+  Add a render-only `@tavojs/core/runtime` entry point so embedded canonical renderers do not
+  load application routing or file-based page discovery. Its browser store avoids server snapshot
+  globals, and Deferred settles through the component lifecycle without importing the MVC layer.
+
 ## 1.0.3
 
 ### Patch Changes

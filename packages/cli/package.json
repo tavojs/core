@@ -1,6 +1,6 @@
 {
   "name": "@tavojs/cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI for creating, building, inspecting, and previewing Tavo.js apps.",
   "type": "module",
   "author": "Hrachya Martirosyan",
@@ -43,7 +43,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "dependencies": {
-    "@tavojs/core": "^1.0.3"
+    "@tavojs/core": "^1.0.4"
   },
   "keywords": [
     "tavo",

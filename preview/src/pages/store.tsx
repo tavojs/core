@@ -15,7 +15,7 @@ type DemoState = {
 
 type StoreDemoState = {
   snapshot: DemoState;
-  log: string[];
+  log: StoreLogEntry[];
   listenersActive: boolean;
   subscribeEvents: number;
   selectorEvents: number;
@@ -40,10 +40,17 @@ type StoreSnapshotModel = {
 };
 
 type StoreLogModel = {
-  log: string[];
+  log: StoreLogEntry[];
+};
+
+type StoreLogEntry = {
+  id: string;
+  message: string;
 };
 
 const names = ["Ada", "Grace", "Katherine", "Radia"];
+const logOwner = typeof window === "undefined" ? "server" : "client";
+let logSequence = 0;
 
 function createInitialDemoState(): DemoState {
   return {
@@ -88,7 +95,10 @@ class StoreDemoService {
   record(message: string) {
     storeDemoState.patch((previous) => ({
       log: [
-        `${new Date().toLocaleTimeString()} - ${message}`,
+        {
+          id: `${logOwner}-${++logSequence}`,
+          message: `${new Date().toLocaleTimeString()} - ${message}`,
+        },
         ...previous.log,
       ].slice(0, 10),
     }));
@@ -415,7 +425,7 @@ const StoreLogView = createTavo<
       <h3>Event Log</h3>
       <ul className="tavo-list">
         {state.log.map((entry) => (
-          <li key={entry}>{entry}</li>
+          <li key={entry.id}>{entry.message}</li>
         ))}
       </ul>
     </section>

@@ -39,7 +39,7 @@ Example:
 This renders:
 
 - fallback content first
-- resolved content later when the server stream is ready to patch it in
+- resolved content later, through a server stream during SSR or a local update during CSR
 
 ## Shared Deferred Values
 
@@ -62,7 +62,7 @@ boundary immediately even if the underlying promise cannot cancel itself:
 const controller = new AbortController();
 const shared = createDeferredValue(loadPanel({ signal: controller.signal }), {
   id: "panel",
-  signal: controller.signal
+  signal: controller.signal,
 });
 ```
 
@@ -77,15 +77,23 @@ At a high level:
 
 That gives progressive delivery while keeping the page authoring model stable.
 
+Document streams produce the next chunk when the consumer requests it. Settled deferred
+updates remain queued while the consumer is paused, and nested patches follow their parent
+markup. Cancelling the stream stops pending patch rendering and releases the stream's queue.
+It cannot forcibly cancel a promise supplied by application code; pass cancellation signals
+to the producer when its work should stop with the request.
+
 ## SSR And CSR Behavior
 
 Progressive deferred streaming is SSR-only.
 
 In SSR mode, promise-backed `Deferred` boundaries render fallback HTML first, then Tavo.js streams patch scripts that replace the fallback when each promise resolves.
 
-In pure CSR mode, there is no server HTML stream to patch. Promise-backed `Deferred` boundaries therefore render their fallback UI and do not run client-side stream coordination. Use route loaders, controllers, or stores for CSR data loading that must resolve in the browser.
+In pure CSR mode, there is no server HTML stream to patch. Promise-backed `Deferred` boundaries instead subscribe in the browser and reconcile their fallback to resolved, rejected, or timed-out output. Rejections use `errorFallback`; timeouts prefer `timeoutFallback` when provided.
 
 Hydrated SSR pages can still read serialized deferred results that were produced by the server.
+
+Changing the promise, timeout, ID, serializer, or signal cancels the previous boundary run. Unmounting also clears its timeout and abort listener, and late promise continuations are ignored. This lifecycle cleanup cannot force an arbitrary third-party promise to stop; pass the same `AbortSignal` to the underlying operation when it supports cancellation.
 
 ## Good Use Cases
 
@@ -113,7 +121,7 @@ Use deferred rendering for:
 
 ## Timeout-aware Deferred Boundaries
 
-`Deferred` and `createDeferredValue(...)` also support timeout behavior for production streaming flows.
+`Deferred` and `createDeferredValue(...)` also support timeout behavior in SSR and CSR flows.
 
 Example:
 
@@ -128,12 +136,9 @@ const slowValue = createDeferredValue(fetchSlowData(), {
   ),
 });
 
-<Deferred
-  value={slowValue}
-  fallback={<p>Loading slow panel...</p>}
->
+<Deferred value={slowValue} fallback={<p>Loading slow panel...</p>}>
   {(data) => <section>{data.title}</section>}
-</Deferred>
+</Deferred>;
 ```
 
 This helps when:
@@ -157,8 +162,8 @@ createNodeRequestHandler({
   modules,
   stream: true,
   document: {
-    nonce: requestNonce
-  }
+    nonce: requestNonce,
+  },
 });
 ```
 

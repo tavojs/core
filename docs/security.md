@@ -204,6 +204,10 @@ session data in your database, Redis, or another server-side store. `createMemor
 is bounded to 10,000 entries by default and accepts `maxEntries`, but it remains intended for tests
 and local demos rather than production persistence.
 
+Session data is copied with `structuredClone` when it crosses storage boundaries. Use cloneable
+data such as plain objects, arrays, dates, maps, and sets; keep functions and resource handles
+outside sessions. Nested edits remain local to that request until `commitSession()` succeeds.
+
 Keep secrets, sessions, database clients, and private API clients behind a server module boundary.
 Tavo.js blocks static imports from `src/server/**` in the client bundle and recognizes the canonical
 `@tavojs/core/server-only` marker:
@@ -306,6 +310,10 @@ Remote image optimization is disabled by default. When enabled, remote hosts mus
 
 Remote redirects are revalidated on every hop. Local optimized images must live inside `publicDir`; symlink escapes and oversized files are rejected.
 
+Remote image connections use the validated DNS addresses while retaining the original hostname
+for HTTP and TLS verification. DNS resolution and response reads are subject to the timeout.
+The optimizer uses direct Node HTTP(S) requests with `Accept-Encoding: identity`.
+
 ## Monitor Endpoint
 
 The generated production SSR server keeps `/_tavo/monitor` hidden unless `TAVO_MONITOR_TOKEN` is configured. Set a strong token and pass the same value to the CLI:
@@ -318,6 +326,9 @@ tavo monitor --url https://example.com --token secret
 Do not expose monitor data publicly without authentication. The CLI sends tokens in the
 `Authorization: Bearer ...` header. Query-string tokens are rejected because URLs are commonly
 recorded by proxies, shells, browsers, and monitoring systems.
+
+Per-path monitoring is disabled without a token. When enabled, it retains up to 1,024 recently
+accessed paths, so the reported top routes describe that bounded set.
 
 ## Content Security Policy
 

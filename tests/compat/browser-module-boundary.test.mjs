@@ -50,6 +50,7 @@ test("compat: browser entry graphs do not resolve Node-only modules", async () =
         input: {
           root: path.join(coreSourceDir, "index.browser.ts"),
           router: path.join(coreSourceDir, "router/index.ts"),
+          runtime: path.join(coreSourceDir, "runtime/index.ts"),
           config: path.join(coreSourceDir, "config/browser.ts"),
           plugin: path.join(coreSourceDir, "plugins/index.ts"),
           dev: path.join(coreSourceDir, "dev.browser.ts"),

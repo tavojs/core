@@ -1,4 +1,5 @@
 export {
+  clearDelegatedListeners,
   removeDelegatedListener,
   setDelegatedListener
 } from "./events/delegation.js";

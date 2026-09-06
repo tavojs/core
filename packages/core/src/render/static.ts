@@ -1,4 +1,4 @@
-import { CONTEXT_PROVIDER, DEFERRED_BLOCK, ERROR_BOUNDARY } from "../components/index.js";
+import { CONTEXT_PROVIDER, DEFERRED_BLOCK, ERROR_BOUNDARY } from "../components/special.js";
 import { Fragment, type Child, type VNode } from "../jsx.js";
 import {
   resetRuntimeIdCounter,
@@ -52,6 +52,8 @@ export function renderToStringWithContext(
       && value !== null
       && typeof (value as Promise<unknown>).then === "function";
     if (isPromise) {
+      // Static fallbacks and the stream head prepass may precede async consumption.
+      void Promise.resolve(value).catch(() => {});
       const tag = normalizeElementTagName(node.props.as);
       const id = typeof node.props.id === "string" ? node.props.id : undefined;
       const inner = renderToStringWithContext(

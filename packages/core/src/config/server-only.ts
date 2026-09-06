@@ -1,4 +1,5 @@
 import path from "node:path";
+import { isWithinDirectory, resolveDirectoryPaths } from "./directories.js";
 import { TavoError } from "../diagnostics.js";
 import {
   importTargetsServerDirectory,
@@ -281,13 +282,13 @@ function describeImportChain(context: ModuleGraphContext, file: string, root: st
 }
 
 export function createServerOnlyGuardPlugin() {
-  let root = process.cwd();
+  let roots = resolveDirectoryPaths(process.cwd());
 
   return {
     name: "tavo:server-only-guard",
     enforce: "pre" as const,
     configResolved(config: { root?: string }) {
-      root = path.resolve(config.root ?? process.cwd());
+      roots = resolveDirectoryPaths(config.root ?? process.cwd());
     },
     transform(this: ModuleGraphContext, code: string, id: string, options?: { ssr?: boolean }) {
       if (options?.ssr) {
@@ -295,6 +296,7 @@ export function createServerOnlyGuardPlugin() {
       }
 
       const file = stripQuery(id);
+      const root = roots.find((directory) => isWithinDirectory(file, directory)) ?? roots[0]!;
       if (!isSourceFile(file)) {
         return null;
       }

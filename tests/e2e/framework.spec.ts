@@ -4,7 +4,9 @@ const monitorToken = process.env.TAVO_MONITOR_TOKEN || "tavo-e2e-monitor-token-2
 const monitorHeaders = { Authorization: `Bearer ${monitorToken}` };
 
 test.beforeEach(async ({ request }) => {
-  const response = await request.get("/_tavo/monitor", { headers: monitorHeaders });
+  const response = await request.get("/_tavo/monitor", {
+    headers: monitorHeaders
+  });
   expect(response.ok()).toBeTruthy();
   const payload = await response.json();
   expect(payload.server?.mode).toBe("production-ssr");
@@ -70,6 +72,26 @@ test("production html reports SSR and CSR route modes", async ({ page, request }
   expect(staticHtml).toContain("Static SSR With Revalidate");
 });
 
+test("client Deferred settles and releases continuations in a real browser", async ({ page }) => {
+  await page.goto("/deferred-client");
+  await expect(page.getByRole("heading", { name: "Client Deferred Lifecycle" })).toBeVisible();
+  await expect(page.getByTestId("resolved-pending")).toBeVisible();
+  await expect(page.getByTestId("rejected-pending")).toBeVisible();
+  await expect(page.getByTestId("timeout-pending")).toBeVisible();
+  await expect(page.getByTestId("cancellation-pending")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__TAVO_DEFERRED_CANCELLATION__?.abortListeners ?? -1)).toBe(1);
+
+  await expect(page.getByTestId("resolved-output")).toHaveText("Resolved: browser value");
+  await expect(page.getByTestId("rejected-output")).toHaveText("Rejected: browser rejection");
+  await expect(page.getByTestId("timeout-output")).toHaveText("Timed out in browser");
+
+  await page.getByRole("link", { name: /Home/ }).click();
+  await expect(page.getByRole("heading", { name: "Home" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__TAVO_DEFERRED_CANCELLATION__?.abortListeners ?? -1)).toBe(0);
+  await page.waitForTimeout(2500);
+  expect(await page.evaluate(() => window.__TAVO_DEFERRED_CANCELLATION__?.lateRenders ?? -1)).toBe(0);
+});
+
 test("production server hardens static assets and survives malformed paths", async ({ request }) => {
   const assetResponse = await request.get("/site.webmanifest");
   expect(assetResponse.ok()).toBeTruthy();
@@ -91,7 +113,9 @@ test("production monitor requires a bearer token and emits hardening headers", a
   const unauthorized = await request.get("/_tavo/monitor");
   expect(unauthorized.status()).toBe(404);
 
-  const response = await request.get("/_tavo/monitor", { headers: monitorHeaders });
+  const response = await request.get("/_tavo/monitor", {
+    headers: monitorHeaders
+  });
 
   expect(response.ok()).toBeTruthy();
   expect(response.headers()["x-content-type-options"]).toBe("nosniff");

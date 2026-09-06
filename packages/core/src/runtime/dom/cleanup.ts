@@ -1,13 +1,29 @@
 import type { MountedNode } from "./types.js";
 import { cleanupComponentRuntime } from "./component-runtime.js";
 import { cancelScheduledComponent } from "./scheduler.js";
+import { clearDelegatedListeners } from "./events.js";
 import { clearDomRef } from "../../refs/index.js";
+
+const cleanedMountedNodes = new WeakSet<object>();
+
+function safely(operation: (() => void) | null | undefined): void {
+  if (!operation) {
+    return;
+  }
+  try {
+    operation();
+  } catch {
+    // Teardown is best-effort per resource and must continue through the tree.
+  }
+}
 
 function removeNodeRange(parent: Node, start: Node, end: Node): void {
   let current: Node | null = start;
   while (current) {
     const nextSibling: Node | null = current.nextSibling;
-    parent.removeChild(current);
+    if (current.parentNode === parent) {
+      parent.removeChild(current);
+    }
     if (current === end) {
       break;
     }
@@ -20,10 +36,15 @@ export function clearContainer(container: Element | DocumentFragment): void {
 }
 
 export function cleanupMounted(node: MountedNode): void {
+  if (cleanedMountedNodes.has(node)) {
+    return;
+  }
+  cleanedMountedNodes.add(node);
+
   if (node.kind === "component") {
     node.unmounted = true;
     for (const dep of node.dependencies) {
-      dep.unsubscribe();
+      safely(dep.unsubscribe);
     }
     node.dependencies = [];
     cancelScheduledComponent(node);
@@ -49,12 +70,13 @@ export function cleanupMounted(node: MountedNode): void {
   }
 
   if (node.kind === "element") {
+    clearDelegatedListeners(node.node);
     for (const child of node.children) {
       cleanupMounted(child);
     }
-    node.directivesCleanup?.();
+    safely(node.directivesCleanup);
     node.directivesCleanup = null;
-    clearDomRef(node.props.ref);
+    safely(() => clearDomRef(node.props.ref));
   }
 }
 

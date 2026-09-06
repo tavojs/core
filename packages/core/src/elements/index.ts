@@ -1,7 +1,5 @@
 export type ElementCleanup = () => void;
-export type ElementDirective<T extends HTMLElement = HTMLElement> = (
-  element: T
-) => void | ElementCleanup;
+export type ElementDirective<T extends HTMLElement = HTMLElement> = (element: T) => void | ElementCleanup;
 export type ElementDirectiveInput<T extends HTMLElement = HTMLElement> =
   | ElementDirective<T>
   | Array<ElementDirective<T> | null | undefined | false>
@@ -22,9 +20,7 @@ export type TransitionOptions<T extends HTMLElement = HTMLElement> = {
   onLeave?: (element: T) => void;
 };
 
-function normalizeDirectives<T extends HTMLElement>(
-  value: ElementDirectiveInput<T>
-): Array<ElementDirective<T>> {
+function normalizeDirectives<T extends HTMLElement>(value: ElementDirectiveInput<T>): Array<ElementDirective<T>> {
   if (!value) {
     return [];
   }
@@ -45,11 +41,22 @@ export function applyElementDirectives<T extends HTMLElement>(
   }
 
   const cleanups: ElementCleanup[] = [];
-  for (const directive of directives) {
-    const cleanup = directive(element);
-    if (typeof cleanup === "function") {
-      cleanups.push(cleanup);
+  try {
+    for (const directive of directives) {
+      const cleanup = directive(element);
+      if (typeof cleanup === "function") {
+        cleanups.push(cleanup);
+      }
     }
+  } catch (error) {
+    for (let index = cleanups.length - 1; index >= 0; index -= 1) {
+      try {
+        cleanups[index]();
+      } catch {
+        // Preserve the directive failure while still attempting every cleanup.
+      }
+    }
+    throw error;
   }
 
   if (cleanups.length === 0) {
@@ -58,7 +65,11 @@ export function applyElementDirectives<T extends HTMLElement>(
 
   return () => {
     for (let index = cleanups.length - 1; index >= 0; index -= 1) {
-      cleanups[index]();
+      try {
+        cleanups[index]();
+      } catch {
+        // One teardown must not prevent later directives from releasing resources.
+      }
     }
   };
 }
@@ -71,9 +82,7 @@ export function createDirective<T extends HTMLElement = HTMLElement>(
 }
 
 /** Creates a directive that focuses the element after it is mounted. */
-export function autoFocus<T extends HTMLElement = HTMLElement>(
-  options?: FocusOptions
-): ElementDirective<T> {
+export function autoFocus<T extends HTMLElement = HTMLElement>(options?: FocusOptions): ElementDirective<T> {
   return (element) => {
     queueMicrotask(() => element.focus(options));
   };

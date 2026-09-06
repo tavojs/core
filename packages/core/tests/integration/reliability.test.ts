@@ -55,8 +55,10 @@ test("reliability: public entry points publish machine-readable stability levels
   assert.equal(getApiStability("@tavojs/core/server").level, "stable");
   assert.equal(getApiStability("@tavojs/core/plugin").level, "stable");
   assert.equal(getApiStability("@tavojs/core/dev").level, "experimental");
-  assert.equal(Object.keys(TAVO_API_STABILITY).length, 9);
-  assert.ok(Object.values(TAVO_API_STABILITY).every((entry) => entry.since === "1.0"));
+  assert.equal(Object.keys(TAVO_API_STABILITY).length, 10);
+  for (const [specifier, entry] of Object.entries(TAVO_API_STABILITY)) {
+    assert.equal(entry.since, specifier === "@tavojs/core/runtime" ? "1.0.4" : "1.0");
+  }
 });
 
 test("reliability: structured instrumentation reports timing without affecting runtime work", async () => {

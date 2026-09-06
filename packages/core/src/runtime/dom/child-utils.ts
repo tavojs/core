@@ -52,6 +52,23 @@ export function assertStrictKeys(children: Child[]): void {
   }
 }
 
+export function assertUniqueKeys(children: Child[]): void {
+  const seen = new Set<string | number>();
+  for (let index = 0; index < children.length; index += 1) {
+    const key = getChildKey(children[index]);
+    if (key === null) {
+      continue;
+    }
+    if (seen.has(key)) {
+      throw new Error(
+        `tavo keyed reconciliation: duplicate key "${String(key)}" at child index ${index}. ` +
+          "Sibling keys must be unique and stable."
+      );
+    }
+    seen.add(key);
+  }
+}
+
 export function childKindLabel(child: Child): string {
   if (child === null || child === undefined || child === false || child === true) {
     return "empty";

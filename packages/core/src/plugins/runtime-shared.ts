@@ -77,12 +77,38 @@ export function routePathToFile(owner: string, path: string): string {
 }
 
 export type RuntimeState = {
+  disposed: boolean;
+  disposal?: Promise<void>;
   urlPolicy: ResolvedUrlPolicy;
   values: Map<string, unknown>;
   requestFactories: Map<string, (context: any) => unknown>;
   phases: Map<string, TavoPluginPhase>;
   disposers: Array<() => Promise<void>>;
 };
+
+export function assertRuntimeActive(state: RuntimeState): void {
+  if (state.disposed)
+    throw new TavoError("TAVO_PLUGIN_009", "Plugin runtime has been disposed.");
+}
+
+export async function drainDisposers(disposers: Array<() => Promise<void>>, message: string): Promise<void> {
+  const errors: unknown[] = [];
+  for (const dispose of disposers.splice(0).reverse()) {
+    try { await dispose(); } catch (error) { errors.push(error); }
+  }
+  if (errors.length) throw new AggregateError(errors, message);
+}
+
+export function disposeRuntimeState(state: RuntimeState): Promise<void> {
+  if (!state.disposal) {
+    state.disposed = true;
+    state.values.clear();
+    state.requestFactories.clear();
+    state.phases.clear();
+    state.disposal = Promise.resolve().then(() => drainDisposers(state.disposers, "Plugin runtime disposal failed."));
+  }
+  return state.disposal;
+}
 
 export function serializePluginStores(
   graph: CompiledPluginGraph,
@@ -221,6 +247,7 @@ export function runtimeResolver(
     resolve<T>(
       token: PluginCapabilityToken<T, "runtime"> | PluginStoreToken<any>,
     ): T {
+      assertRuntimeActive(state);
       const owner = resolveOwnerForToken(graph, consumer, token);
       const key = ownedTokenKey(owner, token);
       if (!state.values.has(key))
@@ -262,4 +289,11 @@ export function disposable(value: unknown): (() => Promise<void>) | undefined {
       await candidate.dispose!();
     };
   return undefined;
+}
+
+/** A rejected synchronous initialization still owns eventual async resources. */
+export function discardAsyncResult(value: PromiseLike<unknown>): void {
+  void Promise.resolve(value).then(async (resolved) => {
+    await disposable(resolved)?.();
+  }).catch(() => undefined);
 }

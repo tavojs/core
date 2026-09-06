@@ -11,6 +11,7 @@ import { createFetchRequestHandler } from "../../src/ssr/handlers.ts";
 import { optimizeImageFromUrl } from "../../src/ssr/image.ts";
 import { definePlugin } from "../../src/plugins/index.ts";
 import { normalizeRedirectTarget } from "../../src/security.ts";
+import { mockImageRequests } from "./image-request-fixture.ts";
 import {
   attackPayload,
   createMaliciousSecurityModules,
@@ -727,72 +728,41 @@ test("security: plugin raw head HTML remains an explicit escape hatch", async ()
   assert.match(response.html, /window\.__raw_head_escape_hatch = true/);
 });
 
-test("security: remote image redirects are revalidated", async () => {
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = (async () =>
-    new Response(null, {
-      status: 302,
-      headers: {
-        Location: "http://127.0.0.1/internal.png",
-      },
-    })) as typeof fetch;
-
-  try {
-    await assert.rejects(
-      optimizeImageFromUrl(
-        new URL(
-          "http://example.com/_tavo/image?src=https%3A%2F%2F93.184.216.34%2Fimage.png&w=320",
-        ),
-        {
-          allowRemote: true,
-          remotePatterns: ["93.184.216.34"],
-        },
+test("security: remote image redirects are revalidated", async (context) => {
+  mockImageRequests(context, () => ({
+  status: 302,
+  headers: { location: "http://127.0.0.1/internal.png" }
+  }));
+  await assert.rejects(
+    optimizeImageFromUrl(
+      new URL(
+        "http://example.com/_tavo/image?src=https%3A%2F%2F93.184.216.34%2Fimage.png&w=320",
       ),
-      /private network image hosts are not allowed/,
-    );
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
+      {
+        allowRemote: true,
+        remotePatterns: ["93.184.216.34"],
+      },
+    ),
+    /private network image hosts are not allowed/,
+  );
 });
 
-test("security: remote image timeout covers slow response bodies", async () => {
-  const previousFetch = globalThis.fetch;
-  globalThis.fetch = (async (_input, init) => {
-    const signal = init?.signal;
-    return new Response(
-      new ReadableStream<Uint8Array>({
-        start(controller) {
-          signal?.addEventListener(
-            "abort",
-            () => controller.error(new DOMException("Aborted", "AbortError")),
-            {
-              once: true,
-            },
-          );
-        },
-      }),
-      { status: 200, headers: { "content-type": "image/png" } },
-    );
-  }) as typeof fetch;
-
-  try {
-    await assert.rejects(
-      optimizeImageFromUrl(
-        new URL(
-          "http://localhost/_tavo/image?src=https%3A%2F%2Fcdn.example.com%2Fslow.png&w=320",
-        ),
-        {
-          allowRemote: true,
-          remotePatterns: ["*.example.com"],
-          resolveHostname: async () => [{ address: "93.184.216.34" }],
-          timeoutMs: 10,
-        },
+test("security: remote image timeout covers slow response bodies", async (context) => {
+  mockImageRequests(context, () => ({ headers: { "content-type": "image/png" } }));
+  await assert.rejects(
+    optimizeImageFromUrl(
+      new URL(
+        "http://localhost/_tavo/image?src=https%3A%2F%2Fcdn.example.com%2Fslow.png&w=320",
       ),
-      /aborted/i,
-    );
-  } finally {
-    globalThis.fetch = previousFetch;
-  }
+      {
+        allowRemote: true,
+        remotePatterns: ["*.example.com"],
+        resolveHostname: async () => [{ address: "93.184.216.34" }],
+        timeoutMs: 10,
+      },
+    ),
+    /aborted/i,
+  );
 });
 
 test("security: local image optimizer rejects symlink escapes from publicDir", async () => {

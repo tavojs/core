@@ -8,7 +8,11 @@ function getDefaultStorage(): StorageLike | null {
   if (typeof window === "undefined") {
     return null;
   }
-  return window.localStorage;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
 /** Persists store updates to browser storage and hydrates an initial saved snapshot when available. */
@@ -24,30 +28,38 @@ export function persistStore<T extends Record<string, unknown>>(
     return () => {};
   }
 
-  const existing = storage.getItem(options.key);
-  if (existing) {
-    store.patch(deserialize(existing));
+  let restored: Partial<T> | undefined;
+  try {
+    const existing = storage.getItem(options.key);
+    if (existing) restored = deserialize(existing);
+  } catch {
+    // Blocked storage and corrupt saved snapshots must not prevent store setup.
   }
+  if (restored) store.patch(restored);
 
   return store.subscribe((state) => {
-    const selected = options.pick ? options.pick(state) : state;
-    storage.setItem(options.key, serialize(selected as T));
+    try {
+      const selected = options.pick ? options.pick(state) : state;
+      storage.setItem(options.key, serialize(selected as T));
+    } catch {
+      // Persistence is best-effort; all store consumers must still receive updates.
+    }
   });
 }
 
-/** Creates a derived readonly store that updates whenever the source store's selected value changes. */
+/** Creates a derived store. Call dispose() to stop observing its source. */
 export function computedStore<T extends Record<string, unknown>, S extends Record<string, unknown>>(
   source: Store<T>,
   selector: StoreSelector<T, S>,
   options?: { isEqual?: (left: S, right: S) => boolean }
-): Store<S> {
+): Store<S> & { dispose: Unsubscribe } {
   const derived = createStore(selector(source.getState()));
-  source.watch(
+  const dispose = source.watch(
     selector,
     (next) => {
       derived.setState(next);
     },
     options
   );
-  return derived;
+  return Object.assign(derived, { dispose });
 }

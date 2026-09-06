@@ -14,6 +14,8 @@ export type ComponentRuntimeState = {
   layoutTasks: Map<symbol, ComponentLifecycleTask>;
   passiveTasks: Map<symbol, ComponentLifecycleTask>;
   cleanups: Set<() => void>;
+  renderFinalizers: Set<() => void>;
+  renderVersion: number;
   idBase: string;
   disposed: boolean;
 };
@@ -32,6 +34,8 @@ export function createComponentRuntimeState(): ComponentRuntimeState {
     layoutTasks: new Map<symbol, ComponentLifecycleTask>(),
     passiveTasks: new Map<symbol, ComponentLifecycleTask>(),
     cleanups: new Set<() => void>(),
+    renderFinalizers: new Set<() => void>(),
+    renderVersion: 0,
     idBase: claimRuntimeComponentId(),
     disposed: false
   };
@@ -47,10 +51,7 @@ export function claimRuntimeComponentId(): string {
   return `t${id}`;
 }
 
-export function withActiveComponent<T>(
-  component: MountedComponent,
-  fn: () => T
-): T {
+export function withActiveComponent<T>(component: MountedComponent, fn: () => T): T {
   const previous = activeComponent;
   activeComponent = component;
   try {
@@ -129,6 +130,29 @@ export function registerComponentCleanup(cleanup: () => void): () => void {
   };
   component.runtime.cleanups.add(wrapped);
   return wrapped;
+}
+
+export function registerComponentRenderFinalizer(finalizer: () => void): () => void {
+  const component = activeComponent;
+  if (!component) {
+    return finalizer;
+  }
+  component.runtime.renderFinalizers.add(finalizer);
+  return () => component.runtime.renderFinalizers.delete(finalizer);
+}
+
+export function beginComponentRender(component: MountedComponent): void {
+  component.runtime.renderVersion += 1;
+}
+
+export function runComponentRenderFinalizers(component: MountedComponent): void {
+  for (const finalizer of component.runtime.renderFinalizers) {
+    try {
+      finalizer();
+    } catch {
+      // Render-resource bookkeeping cannot make a completed DOM commit fail.
+    }
+  }
 }
 
 function upsertLifecycleTask(
@@ -230,9 +254,7 @@ export function schedulePassiveTasks(component: MountedComponent): void {
     return;
   }
 
-  const hasPending = Array.from(component.runtime.passiveTasks.values()).some(
-    (task) => task.pending
-  );
+  const hasPending = Array.from(component.runtime.passiveTasks.values()).some((task) => task.pending);
   if (!hasPending) {
     return;
   }
@@ -252,6 +274,7 @@ export function cleanupComponentRuntime(component: MountedComponent): void {
   component.runtime.disposed = true;
   mountedComponentCount = Math.max(0, mountedComponentCount - 1);
   scheduledPassiveComponents.delete(component);
+  component.runtime.renderFinalizers.clear();
   for (const task of component.runtime.layoutTasks.values()) {
     task.pending = false;
     if (task.cleanup) {

@@ -271,8 +271,11 @@ export function createTavo<
           },
         };
         registerComponentCleanup(() => {
-          (controller.instance as MvcControllerHooks<P> | null)?.onDestroy?.();
-          controller.tools.flushCleanups();
+          try {
+            (controller.instance as MvcControllerHooks<P> | null)?.onDestroy?.();
+          } finally {
+            controller.tools.flushCleanups();
+          }
         });
         return { model, controllerPulse, previousProps: null, controller };
       },

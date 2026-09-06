@@ -57,7 +57,6 @@ const ignoredNames = new Set([
   ".codex",
   ".DS_Store",
   ".tavo",
-  "agent-live.yml",
   "dist",
   "global-changelog",
   "handover",

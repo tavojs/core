@@ -107,8 +107,28 @@ export type HydrateResult = {
   cursor: Node | null;
 };
 
+/** Successful checked root commit. */
+export type RootRenderSuccess = Readonly<{ ok: true }>;
+/** Failed checked root commit with the original render error. */
+export type RootRenderFailure = Readonly<{ ok: false; error: unknown }>;
+export type RootRenderOutcome = RootRenderSuccess | RootRenderFailure;
+
+export type RootOptions = Readonly<{
+  /** Receives uncaught root-scoped render failures without replacing the checked outcome. */
+  onError?: (error: unknown) => void;
+}>;
+
+/** Source-compatible root lifecycle API. Roots returned by `createRoot` are `CheckedRoot`s. */
 export type Root = {
   render(node: Child): void;
   hydrate(node: Child): void;
   unmount(): void;
+};
+
+/** A root created by `createRoot`, with observable commit outcomes. */
+export type CheckedRoot = Root & {
+  /** Commits a tree and reports failure after releasing any partial root state. */
+  renderChecked(node: Child): RootRenderOutcome;
+  /** Hydrates a tree and reports failure after releasing any partial root state. */
+  hydrateChecked(node: Child): RootRenderOutcome;
 };

@@ -207,6 +207,27 @@ This deduplicated reference is generated from the published TypeScript declarati
 - `TrailingSlashPolicy`
 - `TypedPageModule`
 
+## `@tavojs/core/runtime`
+
+**stable since 1.0.4.** Focused browser rendering and template APIs.
+
+- `CheckedRoot` — A root created by `createRoot`, with observable commit outcomes.
+- `Child`
+- `Component`
+- `createDirective` — Creates a reusable element directive from a function.
+- `createRoot` — Creates a browser root with observable checked render and hydration commits.
+- `createStore` — Browser-only store used by embedded runtimes without SSR snapshot globals.
+- `Deferred` — Async boundary that streams during SSR and settles Promise-backed state during CSR.
+- `ElementDirective`
+- `ElementDirectiveInput`
+- `ErrorBoundary` — Creates an error boundary vnode that captures descendant render errors.
+- `h`
+- `Image` — SEO-friendly image component that emits responsive SSR optimizer URLs.
+- `ImageProps`
+- `RootRenderOutcome`
+- `Store`
+- `VNode`
+
 ## `@tavojs/core/server`
 
 **stable since 1.0.** Node rendering, sessions, and server utilities.
@@ -261,13 +282,10 @@ No named exports.
 - `BootTavoOptions`
 - `BootTavoResult`
 - `captureFocusRestore` — Captures current focus and returns a function that restores it later.
-- `Child`
 - `ClassName`
-- `Component`
-- `computedStore` — Creates a derived readonly store that updates whenever the source store's selected value changes.
+- `computedStore` — Creates a derived store. Call dispose() to stop observing its source.
 - `createAction` — Creates an MVC-friendly mutation primitive with status, result, error, and abort handling.
 - `createDeferredValue` — Creates a reusable deferred wrapper so nested SSR trees can share one async unit by id.
-- `createDirective` — Creates a reusable element directive from a function.
 - `createExternalStore`
 - `createFormAction` — Creates a form-oriented action for MVC controllers without introducing hook-style APIs.
 - `createI18n` — Creates a reactive i18n service with direct object access through `i18n.text`.
@@ -275,14 +293,12 @@ No named exports.
 - `createListRefs` — Creates a keyed collection of refs for dynamic lists.
 - `createRef` — Creates a mutable DOM ref object for controller-owned element access.
 - `createResource` — Creates an MVC-friendly async resource with explicit load/reset methods and observable state.
-- `createRoot`
 - `createServerFormAction` — Creates a form action that submits to an SSR route action endpoint.
 - `createServiceKey` — Creates a typed key for registering and resolving a named service.
 - `createStore`
 - `createStyleRegistry`
 - `createTavo`
 - `DEFAULT_I18N_SERVICE_NAME`
-- `Deferred` — Progressive SSR boundary that renders stable fallback UI during pure CSR rendering.
 - `DeferredProps`
 - `DeferredState`
 - `DeferredTimeoutError`
@@ -294,11 +310,8 @@ No named exports.
 - `DomRefCallback` — Callback ref shape for one-off DOM element access.
 - `DomRefObject` — Object ref shape used by MVC controllers to keep direct DOM handles.
 - `ElementCleanup`
-- `ElementDirective`
-- `ElementDirectiveInput`
 - `ElementTarget`
 - `ensureClientStyle`
-- `ErrorBoundary` — Creates an error boundary vnode that captures descendant render errors.
 - `ErrorBoundaryProps`
 - `ExternalStore`
 - `focusFirst` — Focuses the first focusable descendant inside a root node.
@@ -317,7 +330,6 @@ No named exports.
 - `getGlobalStore` — Looks up a previously defined global store by name.
 - `getService` — Looks up a previously registered service by name.
 - `getTavoBootMode` — Returns the boot mode Tavo.js will use for the current document.
-- `h`
 - `hasGlobalStore` — Returns true when a named global store exists in the shared registry.
 - `hasService` — Returns true when a named service exists in the shared registry.
 - `Head`
@@ -337,9 +349,7 @@ No named exports.
 - `I18nTextTree`
 - `I18nTextValue`
 - `I18nTranslationKey`
-- `Image` — SEO-friendly image component that emits responsive SSR optimizer URLs.
 - `ImageFormat`
-- `ImageProps`
 - `isTavoError`
 - `lazy` — Creates a component that loads its implementation with a dynamic import on first render.
 - `LazyComponent`
@@ -368,7 +378,11 @@ No named exports.
 - `renderToString`
 - `Resource`
 - `ResourceState`
-- `Root`
+- `retainClientStyle` — Mounts an owner-document-scoped style and removes it after the last disposer runs.
+- `Root` — Source-compatible root lifecycle API. Roots returned by `createRoot` are `CheckedRoot`s.
+- `RootOptions`
+- `RootRenderFailure` — Failed checked root commit with the original render error.
+- `RootRenderSuccess` — Successful checked root commit.
 - `Script` — Injects external or inline scripts into the document head for CSR and SSR flows.
 - `ScriptProps`
 - `SelectorListener`
@@ -388,7 +402,6 @@ No named exports.
 - `StatePatch`
 - `StateUpdater`
 - `StorageLike`
-- `Store`
 - `StoreInitializer`
 - `StoreInitializerSet`
 - `StoreListener`
@@ -415,5 +428,4 @@ No named exports.
 - `trapFocus` — Keeps Tab navigation inside a container until the returned cleanup runs.
 - `tryGetService` — Looks up an optional service by name without throwing when it is missing.
 - `Unsubscribe`
-- `VNode`
 - `withStyleRegistry`

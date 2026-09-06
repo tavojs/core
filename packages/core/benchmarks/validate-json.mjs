@@ -17,6 +17,13 @@ for (const entry of payload.benchmarks) {
   assert.equal(typeof entry.avgMs, "number");
   assert.equal(typeof entry.avgOpMs, "number");
   assert.equal(typeof entry.opsPerSecond, "number");
+  if (entry.samplesMs !== undefined) {
+    assert.equal(entry.samplesMs.length, entry.rounds);
+    assert.ok(entry.samplesMs.every((sample) => Number.isFinite(sample) && sample >= 0));
+    assert.equal(typeof entry.medianMs, "number");
+    assert.equal(typeof entry.medianOpMs, "number");
+    assert.ok(Number.isInteger(entry.warmupIterations) && entry.warmupIterations >= 0);
+  }
   assert.ok(entry.baselineAvgOpMs === null || typeof entry.baselineAvgOpMs === "number" || entry.baselineAvgOpMs === undefined);
   assert.ok(entry.regressionPercent === null || typeof entry.regressionPercent === "number" || entry.regressionPercent === undefined);
   assert.ok(entry.threshold && typeof entry.threshold === "object");

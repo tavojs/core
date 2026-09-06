@@ -181,7 +181,7 @@ test("compat: browser root mirrors stable environment-neutral subpath exports", 
   }
 });
 
-test("compat: stability metadata covers every package export at 1.0", async () => {
+test("compat: stability metadata covers every package export", async () => {
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
   const { TAVO_API_STABILITY } = await import("@tavojs/core");
   const expected = Object.keys(packageJson.exports)
@@ -189,7 +189,9 @@ test("compat: stability metadata covers every package export at 1.0", async () =
     .sort();
 
   assert.deepEqual(Object.keys(TAVO_API_STABILITY).sort(), expected);
-  assert.ok(Object.values(TAVO_API_STABILITY).every((entry) => entry.since === "1.0"));
+  for (const [specifier, entry] of Object.entries(TAVO_API_STABILITY)) {
+    assert.equal(entry.since, specifier === "@tavojs/core/runtime" ? "1.0.4" : "1.0");
+  }
   assert.equal(TAVO_API_STABILITY["@tavojs/core/plugin"].level, "stable");
   assert.equal(TAVO_API_STABILITY["@tavojs/core/router"].level, "stable");
   assert.equal(TAVO_API_STABILITY["@tavojs/core/server"].level, "stable");
@@ -201,6 +203,7 @@ test("compat: public entrypoint map stays intentionally small", async () => {
   assert.deepEqual(Object.keys(packageJson.exports), [
     ".",
     "./router",
+    "./runtime",
     "./server",
     "./config",
     "./plugin",
@@ -416,10 +419,11 @@ test("compat: release metadata tracks package versions and scaffolds 1.x depende
     "utf8"
   );
 
-  assert.equal(corePackageJson.version, "1.0.3");
-  assert.equal(cliPackageJson.version, "1.0.2");
+  assert.equal(corePackageJson.version, "1.0.4");
+  assert.equal(cliPackageJson.version, "1.0.3");
   assert.match(coreChangelog, /^## 1\.0\.3$/m);
   assert.match(coreChangelog, /^## 1\.0\.2$/m);
+  assert.match(coreChangelog, /^## 1\.0\.4$/m);
   assert.match(coreChangelog, /^## 1\.0\.1$/m);
   assert.match(coreChangelog, /^## 1\.0\.0$/m);
   assert.match(cliChangelog, /^## 1\.0\.2$/m);

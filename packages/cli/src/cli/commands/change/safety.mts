@@ -20,16 +20,18 @@ export function shellArgument(value: string): string {
 
 export function assertSafeFile(rootDir: string, file: string): string {
   if (!file || path.isAbsolute(file)) throw new Error(`Unsafe change target: ${file}.`);
-  const normalized = file.replace(/\\/g, "/");
-  const hasTraversal = normalized.split("/").some((part) => part === "..");
+  const portable = file.replace(/\\/g, "/");
+  const hasTraversal = portable.split("/").some((part) => part === "..");
+  const normalized = path.posix.normalize(portable);
   const hasForbiddenPrefix = FORBIDDEN_CHANGE_PREFIXES.some((prefix) => (
-    normalized.startsWith(prefix)
+    normalized === prefix.slice(0, -1) || normalized.startsWith(prefix)
   ));
-  if (hasTraversal || hasForbiddenPrefix) {
+  if (hasTraversal || hasForbiddenPrefix || path.posix.isAbsolute(normalized)) {
     throw new Error(`Unsafe change target: ${file}.`);
   }
-  const absolute = path.resolve(rootDir, file);
-  if (!absolute.startsWith(`${rootDir}${path.sep}`)) {
+  const root = path.resolve(rootDir);
+  const absolute = path.resolve(root, normalized);
+  if (!absolute.startsWith(`${root}${path.sep}`)) {
     throw new Error(`Unsafe change target: ${file}.`);
   }
   return absolute;
@@ -66,6 +68,9 @@ export async function assertNoSymlinkEscape(
     throw new Error(
       `Change target escapes the project through a symbolic link: ${path.relative(rootDir, target)}.`
     );
+  }
+  if (existingReal !== rootReal) {
+    assertSafeFile(rootReal, path.relative(rootReal, existingReal));
   }
 }
 
